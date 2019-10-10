@@ -68,6 +68,7 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
         if((board[i+1][j-1] == otherPlayer || board[i+1][j-1] == otherPlayer+2) && board[i+2][j-2] == 0){
             if (multiOptions) {
                 moves.push_back(moveCopy);
+                jumps.push_back(&moves.at(moves.size()-1));
                 (moves.at(moves.size()-1)).push_back(Coordinate(i+2, j-2));
                 jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king);
             } else {
@@ -83,6 +84,7 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
         if((board[i-1][j+1] == otherPlayer || board[i-1][j+1] == otherPlayer+2) && board[i-2][j+2] == 0){
             if (multiOptions) {
                 moves.push_back(moveCopy);
+                jumps.push_back(&moves.at(moves.size()-1));
                 (moves.at(moves.size()-1)).push_back(Coordinate(i-2, j+2));
                 jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king);
             } else {
@@ -98,6 +100,7 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
         if((board[i+1][j+1] == otherPlayer || board[i+1][j+1] == otherPlayer+2) && board[i+2][j+2] == 0){
             if (multiOptions) {
                 moves.push_back(moveCopy);
+                jumps.push_back(&moves.at(moves.size()-1));
                 (moves.at(moves.size()-1)).push_back(Coordinate(i+2, j+2));
                 jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king);
             } else {
@@ -117,6 +120,8 @@ void legalMoves(int player){
     
     int otherPlayer;
     bool king;
+    bool jumped = false; // If there is a jump that could be made,
+                        // then no need to check for non-jump moves anymore
     
     if(player == 1){
         otherPlayer = 2;
@@ -134,14 +139,16 @@ void legalMoves(int player){
     
                 // check NW
                 if(i != 0){
-                    if(board[i-1][j-1] == 0){
+                    if(!jumped && board[i-1][j-1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i-1, j-1)});
                     } else if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer + 2)
                               && i != 1 && j != 1){
                         if(board[i-2][j-2] == 0){
                             // Handle jump
+                            jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i-2, j-2)});
+                            jumps.push_back(&moves.at(moves.size()-1));
                             jump(moves.at(moves.size()-1), i-2, j-2, player, otherPlayer, king);
                         }
                     }
@@ -149,14 +156,16 @@ void legalMoves(int player){
                 
                 // check NE
                 if(i != 7){
-                    if(board[i+1][j-1] == 0){
+                    if(!jumped && board[i+1][j-1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i+1, j-1)});
                     } else if((board[i+1][j-1] == otherPlayer ||board[i+1][j-1] == otherPlayer + 2)
                               && i != 6 && j != 1){
-                        if(board[i+2][j-2]){
+                        if(board[i+2][j-2] == 0){
                             // Handle jump
+                            jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i+2, j-2)});
+                            jumps.push_back(&moves.at(moves.size()-1));
                             jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king);
                         }
                     }
@@ -167,14 +176,16 @@ void legalMoves(int player){
             if((player == 2 || king) && j != 7){
                 // check SW
                 if(i != 0){
-                    if(board[i-1][j+1] == 0){
+                    if(!jumped && board[i-1][j+1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i-1, j+1)});
                     } else if((board[i-1][j+1] == otherPlayer ||board[i-1][j+1] == otherPlayer + 2)
                               && i != 1 && j != 6){
                         if(board[i-2][j+2] == 0){
                             // Handle jump
+                            jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i-2, j+2)});
+                            jumps.push_back(&moves.at(moves.size()-1));
                             jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king);
                         }
                     }
@@ -182,14 +193,16 @@ void legalMoves(int player){
                 
                 // check SE
                 if(i != 7){
-                    if(board[i+1][j+1] == 0){
+                    if(!jumped && board[i+1][j+1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i+1, j+1)});
                     } else if((board[i+1][j+1] == otherPlayer ||board[i+1][j+1] == otherPlayer + 2)
                               && i != 6 && j != 6){
                         if(board[i+2][j+2] == 0){
                             // Handle jump
+                            jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i+2, j+2)});
+                            jumps.push_back(&moves.at(moves.size()-1));
                             jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king);
                         }
                     }
