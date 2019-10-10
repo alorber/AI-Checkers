@@ -45,16 +45,76 @@ public:
     Coordinate(int i, int j) : x{i}, y{j} {}
 };
 
-void jump(){
-    
-}
-
-// Legal Moves
+// Vector of Legal Moves
 vector<vector<Coordinate>> moves;
 vector<vector<Coordinate>*> jumps;
 
+void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, bool king){
+    // Keeps track of multiple possible double jumps (i.e need to add another move to the list)
+    bool multiOptions = false;
+    vector<Coordinate> moveCopy = move;
+    
+    // NW Corner
+    if(i > 1 && j > 1 && (player == 1 || king)){
+        if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer+2) && board[i-2][j-2] == 0){
+            move.push_back(Coordinate(i-2, j-2));
+            multiOptions = true;
+            jump(move, i-2, j-2, player, otherPlayer, king);
+        }
+    }
+    
+    // NE Corner
+    if(i < 6 && j > 1 && (player == 1 || king)){
+        if((board[i+1][j-1] == otherPlayer || board[i+1][j-1] == otherPlayer+2) && board[i+2][j-2] == 0){
+            if (multiOptions) {
+                moves.push_back(moveCopy);
+                (moves.at(moves.size()-1)).push_back(Coordinate(i+2, j-2));
+                jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king);
+            } else {
+                move.push_back(Coordinate(i+2, j-2));
+                multiOptions = true;
+                jump(move, i+2, j-2, player, otherPlayer, king);
+            }
+        }
+    }
+    
+    // SW Corner
+    if(i > 1 && j < 6 && (player == 2 || king)){
+        if((board[i-1][j+1] == otherPlayer || board[i-1][j+1] == otherPlayer+2) && board[i-2][j+2] == 0){
+            if (multiOptions) {
+                moves.push_back(moveCopy);
+                (moves.at(moves.size()-1)).push_back(Coordinate(i-2, j+2));
+                jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king);
+            } else {
+                move.push_back(Coordinate(i-2, j+2));
+                multiOptions = true;
+                jump(move, i-2, j+2, player, otherPlayer, king);
+            }
+        }
+    }
+    
+    // SE Corner
+    if(i < 6 && j < 6 && (player == 2 || king)){
+        if((board[i+1][j+1] == otherPlayer || board[i+1][j+1] == otherPlayer+2) && board[i+2][j+2] == 0){
+            if (multiOptions) {
+                moves.push_back(moveCopy);
+                (moves.at(moves.size()-1)).push_back(Coordinate(i+2, j+2));
+                jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king);
+            } else {
+                move.push_back(Coordinate(i+2, j+2));
+                multiOptions = true;
+                jump(move, i+2, j+2, player, otherPlayer, king);
+            }
+        }
+    }
+}
+
+//Finds all legal moves for player
 void legalMoves(int player){
 
+    moves.clear();
+    jumps.clear();
+    
     int otherPlayer;
     bool king;
     
@@ -80,7 +140,9 @@ void legalMoves(int player){
                     } else if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer + 2)
                               && i != 1 && j != 1){
                         if(board[i-2][j-2] == 0){
-                           // ***Jump
+                            // Handle jump
+                            moves.push_back({Coordinate(i, j), Coordinate(i-2, j-2)});
+                            jump(moves.at(moves.size()-1), i-2, j-2, player, otherPlayer, king);
                         }
                     }
                 }
@@ -93,7 +155,9 @@ void legalMoves(int player){
                     } else if((board[i+1][j-1] == otherPlayer ||board[i+1][j-1] == otherPlayer + 2)
                               && i != 6 && j != 1){
                         if(board[i+2][j-2]){
-                           //***Jump
+                            // Handle jump
+                            moves.push_back({Coordinate(i, j), Coordinate(i+2, j-2)});
+                            jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king);
                         }
                     }
                 }
@@ -109,7 +173,9 @@ void legalMoves(int player){
                     } else if((board[i-1][j+1] == otherPlayer ||board[i-1][j+1] == otherPlayer + 2)
                               && i != 1 && j != 6){
                         if(board[i-2][j+2] == 0){
-                            //***Jump
+                            // Handle jump
+                            moves.push_back({Coordinate(i, j), Coordinate(i-2, j+2)});
+                            jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king);
                         }
                     }
                 }
@@ -122,7 +188,9 @@ void legalMoves(int player){
                     } else if((board[i+1][j+1] == otherPlayer ||board[i+1][j+1] == otherPlayer + 2)
                               && i != 6 && j != 6){
                         if(board[i+2][j+2] == 0){
-                            //***Jump
+                            // Handle jump
+                            moves.push_back({Coordinate(i, j), Coordinate(i+2, j+2)});
+                            jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king);
                         }
                     }
                 }
