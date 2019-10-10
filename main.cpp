@@ -49,6 +49,18 @@ public:
 vector<vector<Coordinate>> moves;
 vector<vector<Coordinate>*> jumps;
 
+// Prevents jumping same spot twice
+bool legalJump(int jumpedI, int jumpedJ, const vector<Coordinate> & move){
+    
+    for (int i = 0; i < move.size()-1; i++) {
+        if(((abs(move.at(i).x + move.at(i+1).x)) / 2) == jumpedI
+           && ((abs(move.at(i).y + move.at(i+1).y)) / 2) == jumpedJ){
+            return false;
+        }
+    }
+    return true;
+}
+
 void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, bool king){
     // Keeps track of multiple possible double jumps (i.e need to add another move to the list)
     bool multiOptions = false;
@@ -56,7 +68,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // NW Corner
     if(i > 1 && j > 1 && (player == 1 || king)){
-        if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer+2) && board[i-2][j-2] == 0){
+        if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer+2)
+           && board[i-2][j-2] == 0 && legalJump(i-1, j-1, moveCopy)){
             move.push_back(Coordinate(i-2, j-2));
             multiOptions = true;
             jump(move, i-2, j-2, player, otherPlayer, king);
@@ -65,7 +78,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // NE Corner
     if(i < 6 && j > 1 && (player == 1 || king)){
-        if((board[i+1][j-1] == otherPlayer || board[i+1][j-1] == otherPlayer+2) && board[i+2][j-2] == 0){
+        if((board[i+1][j-1] == otherPlayer || board[i+1][j-1] == otherPlayer+2)
+           && board[i+2][j-2] == 0 && legalJump(i+1, j-1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
@@ -81,7 +95,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // SW Corner
     if(i > 1 && j < 6 && (player == 2 || king)){
-        if((board[i-1][j+1] == otherPlayer || board[i-1][j+1] == otherPlayer+2) && board[i-2][j+2] == 0){
+        if((board[i-1][j+1] == otherPlayer || board[i-1][j+1] == otherPlayer+2)
+           && board[i-2][j+2] == 0 && legalJump(i-1, j+1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
@@ -97,7 +112,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // SE Corner
     if(i < 6 && j < 6 && (player == 2 || king)){
-        if((board[i+1][j+1] == otherPlayer || board[i+1][j+1] == otherPlayer+2) && board[i+2][j+2] == 0){
+        if((board[i+1][j+1] == otherPlayer || board[i+1][j+1] == otherPlayer+2)
+           && board[i+2][j+2] == 0 && legalJump(i+1, j+1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
@@ -113,7 +129,7 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
 }
 
 //Finds all legal moves for player
-void legalMoves(int player){
+void getLegalMoves(int player){
 
     moves.clear();
     jumps.clear();
@@ -230,7 +246,7 @@ void printBoard(){
 
 int main(int argc, const char * argv[]) {
     initStartBoard();
-    legalMoves(1);
+    getLegalMoves(1);
     
     return 0;
 }
