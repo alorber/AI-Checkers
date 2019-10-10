@@ -10,6 +10,7 @@
 #include <array>
 #include <string>
 #include <vector>
+#include <fstream>
 
 
 using namespace std;
@@ -18,7 +19,7 @@ using namespace std;
 // 0 = empty space, 1 = player 1, 2 = player 2, 3 = player 1 king, 4 = player 2 king
 int board[8][8] = {0};
 
-//Initializes new game board
+// Initializes new game board
 void initStartBoard(){
     int player = 2;
     for(int i = 0, j = 0; j < 8; i++){
@@ -38,6 +39,30 @@ void initStartBoard(){
     }
 }
 
+// Initializes user-set game board
+void initUserBoard(){
+    // Reads in file with game board. See board key above.
+    string file;
+    cout << "Enter name of file." << '\n';
+    cin >> file;
+    ifstream fin;
+    fin.open(file);
+    int square;
+    
+    int i = 0; int j = 0;
+    while(fin >> square){
+        board[i][j] = square;
+        i++;
+        if(i == 7){
+            i = 0;
+            j++;
+        }
+        if(j == 8){
+            break;
+        }
+    }
+}
+
 //Coordinate class to simplify things
 class Coordinate {
 public:
@@ -47,6 +72,7 @@ public:
 
 // Vector of Legal Moves
 vector<vector<Coordinate>> moves;
+// Vector of moves that include a jump
 vector<vector<Coordinate>*> jumps;
 
 // Prevents jumping same spot twice
@@ -61,6 +87,7 @@ bool legalJump(int jumpedI, int jumpedJ, const vector<Coordinate> & move){
     return true;
 }
 
+// Handles jumping
 void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, bool king){
     // Keeps track of multiple possible double jumps (i.e need to add another move to the list)
     bool multiOptions = false;
@@ -245,8 +272,7 @@ void printBoard(){
 }
 
 int main(int argc, const char * argv[]) {
-    initStartBoard();
-    getLegalMoves(1);
-    
+    initUserBoard();
+    printBoard();
     return 0;
 }
