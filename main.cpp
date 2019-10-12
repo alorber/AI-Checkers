@@ -63,7 +63,7 @@ void initUserBoard(){
     }
 }
 
-//Coordinate class to simplify things
+// Coordinate class to simplify things
 class Coordinate {
 public:
     int x, y;
@@ -208,7 +208,7 @@ void getLegalMoves(int player){
                             // Handle jump
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i+2, j-2)});
-                            jumps.push_back(&moves.at(moves.size()-1));
+                            jumps.push_back(&(moves.at(moves.size()-1)));
                             jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king);
                         }
                     }
@@ -260,19 +260,51 @@ void getLegalMoves(int player){
     }
 }
 
-void printBoard(){
-    for(int i = 0, j = 0; j < 8; i++){
-        cout << " | " << board[i][j];
-        if(i == 7){
-            cout << " | " << '\n';
-            i = -1;
-            j++;
+// Displays all legal moves (If jump are possible, will only display jumps)
+void printMoves(){
+    if(jumps.size() > 0){
+        for(int i = 0; i < jumps.size(); i++){
+            cout << i+1 << ".";
+            
+            for(int j = 0; j < jumps.at(i)->size(); j++){
+                cout << " (" << jumps.at(i)->at(j).x << ", " << jumps.at(i)->at(j).y << ")";
+            }
+            cout << '\n';
+        }
+    } else {
+        for(int i = 0; i < moves.size(); i++){
+            cout << i+1 << ".";
+            
+            for(int j = 0; j < moves.at(i).size(); j++){
+                cout << " (" << moves.at(i).at(j).x << ", " << moves.at(i).at(j).y << ")";
+            }
+            cout << '\n';
         }
     }
 }
 
+void printBoard(){
+    cout << "         X - axis" << '\n' << "     |-0-|-1-|-2-|-3-|-4-|-5-|-6-|-7-|" << '\n' << '\n';
+    cout << '\n' << "     |---|---|---|---|---|---|---|---|" << '\n';
+    for(int i = 0, j = 0; j < 8; i++){
+        if(i == 0){
+            cout << "    ";
+        }
+        cout << " | " << board[i][j];
+        if(i == 7){
+            cout << " | " << '\n' << "     |---|---|---|---|---|---|---|---|" << '\n';
+            i = -1;
+            j++;
+        }
+    }
+    cout << '/n';
+}
+
 int main(int argc, const char * argv[]) {
+    moves.reserve(200);
     initUserBoard();
     printBoard();
+    getLegalMoves(1);
+    printMoves();
     return 0;
 }
