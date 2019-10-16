@@ -328,11 +328,41 @@ void ImplementMove(int moveNum){
     }
 }
 
+// Asks user for starting player
+bool userStarts(){
+    string resp;
+    cout << "Would you like to go first? (Y/N)" << '\n';
+    cin >> resp;
+    while(resp.compare("Y") != 0 && resp.compare("N") != 0){
+        cout << "That was an invalid response. Please respond with 'Y' or 'N'." << '\n';
+        cout << "Would you like to go first? (Y/N)" << '\n';
+        cin >> resp;
+    }
+    if(resp.compare("Y") == 0){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void playGame(){
+    // Decides starting player
+    int startingPlayer;
+    if(userStarts()){
+        startingPlayer = 1;
+    } else {
+        startingPlayer = 2;
+    }
+    cout << "The starting player is " << startingPlayer << ".\n";
+    
+}
+
 int main(int argc, const char * argv[]) {
     moves.reserve(200);
     initStartBoard();
-    printBoard();
-    getLegalMoves(1);
-    printMoves();
+    playGame();
+//    printBoard();
+//    getLegalMoves(1);
+//    printMoves();
     return 0;
 }
