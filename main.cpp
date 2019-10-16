@@ -345,6 +345,23 @@ bool userStarts(){
     }
 }
 
+// Tests if a player has won
+bool gameOver(){
+    return false;
+}
+
+int getMoveChoice(){
+    int moveChoice;
+    int numChoices = jumps.size() > 0 ? jumps.size() : moves.size();
+    cout << "Which move would you like to do? \n";
+    cin >> moveChoice;
+    while(moveChoice < 1 || moveChoice > numChoices){
+        cout << "That was an invalid choice.\nPlease give a number choice from the list of possible moves.\n";
+        cin >> moveChoice;
+    }
+    return moveChoice;
+}
+
 void playGame(){
     // Decides starting player
     int startingPlayer;
@@ -354,6 +371,36 @@ void playGame(){
         startingPlayer = 2;
     }
     cout << "The starting player is " << startingPlayer << ".\n";
+    
+    printBoard();
+    
+    if(startingPlayer == 1){
+        getLegalMoves(1);
+        printMoves();
+        ImplementMove(getMoveChoice());
+        printBoard();
+    }
+    while(!gameOver()){
+        // Player 2 turn
+        getLegalMoves(2);
+        // Picks random move for AI
+        int numChoices = jumps.size() > 0 ? jumps.size() : moves.size();
+        srand(time(0));
+        cout << "AI is moving...\n";
+        ImplementMove((rand()%numChoices) + 1);
+        printBoard();
+        
+        if(gameOver()){
+            break;
+        }
+        
+        // Player 1 turn
+        getLegalMoves(1);
+        printMoves();
+        ImplementMove(getMoveChoice());
+        printBoard();
+        
+    }
     
 }
 
@@ -375,9 +422,8 @@ void testMoves(){
 
 int main(int argc, const char * argv[]) {
     moves.reserve(200);
-    initUserBoard();
-    testMoves();
-   // playGame();
+    initStartBoard();
+    playGame();
 //    printBoard();
 //    getLegalMoves(1);
 //    printMoves();
