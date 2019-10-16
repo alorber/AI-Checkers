@@ -357,10 +357,27 @@ void playGame(){
     
 }
 
+void testMoves(){
+    string re = "Y";
+    int choice;
+    printBoard();
+    while(re.compare("Y") == 0){
+        getLegalMoves(1);
+        printMoves();
+        cout << "Which move?\n";
+        cin >> choice;
+        ImplementMove(choice);
+        printBoard();
+        cout << "Would you like to move again?\n";
+        cin >> re;
+    }
+}
+
 int main(int argc, const char * argv[]) {
     moves.reserve(200);
-    initStartBoard();
-    playGame();
+    initUserBoard();
+    testMoves();
+   // playGame();
 //    printBoard();
 //    getLegalMoves(1);
 //    printMoves();
