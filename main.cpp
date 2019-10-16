@@ -347,9 +347,36 @@ bool userStarts(){
 
 // Tests if a player has won
 bool gameOver(){
-    return false;
+    bool player1Wins = true;
+    bool player2Wins = true;
+    
+    for(int i = 0, j = 0; i < 8; i++){
+        if(player2Wins && (board[i][j] == 1 || board[i][j] == 3)){
+            player2Wins = false;
+        } else if(player1Wins && (board[i][j] == 2 || board[i][j] == 4)){
+            player1Wins = false;
+        }
+        
+        if (!player1Wins && !player2Wins) {
+            return false;
+        }
+        
+        if(i == 7){
+            i = -1;
+            j++;
+        }
+    }
+    
+    if (player1Wins) {
+        cout << "Congrats! You win! \n";
+        return true;
+    } else {
+        cout << "The AI has won.\n";
+        return true;
+    }
 }
 
+// Gets user's move choice
 int getMoveChoice(){
     int moveChoice;
     int numChoices = jumps.size() > 0 ? jumps.size() : moves.size();
@@ -373,9 +400,18 @@ void playGame(){
     cout << "The starting player is " << startingPlayer << ".\n";
     
     printBoard();
+    // Checks if the board can be played
+    if(gameOver()){
+        return;
+    }
     
     if(startingPlayer == 1){
         getLegalMoves(1);
+        // If no moves then game ends
+        if (moves.size() == 0) {
+            cout << "You have no possible moves. The AI wins.\n";
+            return;
+        }
         printMoves();
         ImplementMove(getMoveChoice());
         printBoard();
@@ -383,6 +419,11 @@ void playGame(){
     while(!gameOver()){
         // Player 2 turn
         getLegalMoves(2);
+        // If no moves then game ends
+        if(moves.size() == 0){
+            cout << "The AI is unable to move. You win!\n";
+            return;
+        }
         // Picks random move for AI
         int numChoices = jumps.size() > 0 ? jumps.size() : moves.size();
         srand(time(0));
@@ -391,11 +432,16 @@ void playGame(){
         printBoard();
         
         if(gameOver()){
-            break;
+            return;
         }
         
         // Player 1 turn
         getLegalMoves(1);
+        // If no moves then game ends
+        if(moves.size() == 0) {
+            cout << "You have no possible moves. The AI wins.\n";
+            return;
+        }
         printMoves();
         ImplementMove(getMoveChoice());
         printBoard();
@@ -404,6 +450,7 @@ void playGame(){
     
 }
 
+// fnc to test moves
 void testMoves(){
     string re = "Y";
     int choice;
@@ -424,8 +471,5 @@ int main(int argc, const char * argv[]) {
     moves.reserve(200);
     initStartBoard();
     playGame();
-//    printBoard();
-//    getLegalMoves(1);
-//    printMoves();
     return 0;
 }
