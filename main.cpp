@@ -302,6 +302,32 @@ void printBoard(){
     cout << '\n';
 }
 
+// Takes the choice of move from legal move list and implements move
+void ImplementMove(int moveNum){
+    moveNum--;
+    bool jump = jumps.size() > 0;
+    if(!jump){
+        board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = board[moves.at(moveNum).at(0).x][moves.at(moveNum).at(0).y];
+        board[moves.at(moveNum).at(0).x][moves.at(moveNum).at(0).y] = 0;
+    } else {
+        int piece = board[jumps.at(moveNum)->at(0).x][jumps.at(moveNum)->at(0).y];
+        int jumpedX;
+        int jumpedY;
+        // Clears starting square
+        board[jumps.at(moveNum)->at(0).x][jumps.at(moveNum)->at(0).y] = 0;
+        for (int i = 0; i < jumps.at(moveNum)->size(); i++) {
+            if(i == jumps.at(moveNum)->size() - 1){
+                board[jumps.at(moveNum)->at(i).x][jumps.at(moveNum)->at(i).y] = piece;
+            } else {
+                // Gets coordinate of jumped square
+                jumpedX = (abs(jumps.at(moveNum)->at(i).x + jumps.at(moveNum)->at(i+1).x)) / 2;
+                jumpedY = (abs(jumps.at(moveNum)->at(i).y + jumps.at(moveNum)->at(i+1).y)) / 2;
+                board[jumpedX][jumpedY] = 0;
+            }
+        }
+    }
+}
+
 int main(int argc, const char * argv[]) {
     moves.reserve(200);
     initStartBoard();
