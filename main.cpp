@@ -284,25 +284,27 @@ void printMoves(){
 }
 
 void printBoard(){
-    cout << "         X - axis" << '\n' << "     |-0-|-1-|-2-|-3-|-4-|-5-|-6-|-7-|" << '\n' << '\n';
-    cout << '\n' << "     |---|---|---|---|---|---|---|---|" << '\n';
+    cout << "              X - axis" << '\n';
+    cout << "         |-0-|-1-|-2-|-3-|-4-|-5-|-6-|-7-|" << '\n';
+    cout << "  Y";
+    cout << '\n' << "|---|    |---|---|---|---|---|---|---|---|" << '\n';
     for(int i = 0, j = 0; j < 8; i++){
         if(i == 0){
-            cout << "    ";
+            cout << "|-" << j << "-|   ";
         }
         cout << " | " << board[i][j];
         if(i == 7){
-            cout << " | " << '\n' << "     |---|---|---|---|---|---|---|---|" << '\n';
+            cout << " | " << '\n' << "|---|    |---|---|---|---|---|---|---|---|" << '\n';
             i = -1;
             j++;
         }
     }
-    cout << '/n';
+    cout << '\n';
 }
 
 int main(int argc, const char * argv[]) {
     moves.reserve(200);
-    initUserBoard();
+    initStartBoard();
     printBoard();
     getLegalMoves(1);
     printMoves();
