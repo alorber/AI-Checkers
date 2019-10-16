@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-
+#include <math.h>
 
 using namespace std;
 
@@ -378,13 +378,15 @@ bool gameOver(){
 
 // Gets user's move choice
 int getMoveChoice(){
-    int moveChoice;
+    double moveChoice;
     int numChoices = jumps.size() > 0 ? jumps.size() : moves.size();
     cout << "Which move would you like to do? \n";
     cin >> moveChoice;
+    moveChoice = round(moveChoice);
     while(moveChoice < 1 || moveChoice > numChoices){
         cout << "That was an invalid choice.\nPlease give a number choice from the list of possible moves.\n";
         cin >> moveChoice;
+        moveChoice = round(moveChoice);
     }
     return moveChoice;
 }
