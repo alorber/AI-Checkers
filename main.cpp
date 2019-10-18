@@ -93,6 +93,11 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     bool multiOptions = false;
     vector<Coordinate> moveCopy = move;
     
+    // If you end a jump in a space to become a king, your jump ends
+    if (((j == 0 && player == 1) || (j == 7 && player == 2)) && !king) {
+        return;
+    }
+    
     // NW Corner
     if(i > 1 && j > 1 && (player == 1 || king)){
         if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer+2)
@@ -310,20 +315,32 @@ void printBoard(){
 void ImplementMove(int moveNum){
     moveNum--;
     bool jump = jumps.size() > 0;
+    int piece;
     if(!jump){
-        board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = board[moves.at(moveNum).at(0).x][moves.at(moveNum).at(0).y];
+        piece = board[moves.at(moveNum).at(0).x][moves.at(moveNum).at(0).y];
+        // Makes piece king when needed
+        if ((moves.at(moveNum).at(1).y == 0 && piece == 1) || (moves.at(moveNum).at(1).y == 7 && piece == 2)) {
+            board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = piece + 2;
+        } else {
+            board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = piece;
+        }
         board[moves.at(moveNum).at(0).x][moves.at(moveNum).at(0).y] = 0;
     } else {
-        int piece = board[jumps.at(moveNum)->at(0).x][jumps.at(moveNum)->at(0).y];
+        piece = board[jumps.at(moveNum)->at(0).x][jumps.at(moveNum)->at(0).y];
         int jumpedX;
         int jumpedY;
         // Clears starting square
         board[jumps.at(moveNum)->at(0).x][jumps.at(moveNum)->at(0).y] = 0;
         for (int i = 0; i < jumps.at(moveNum)->size(); i++) {
             if(i == jumps.at(moveNum)->size() - 1){
-                board[jumps.at(moveNum)->at(i).x][jumps.at(moveNum)->at(i).y] = piece;
+                // Makes piece king when needed
+                if ((jumps.at(moveNum)->at(i).y == 0 && piece == 1) || (jumps.at(moveNum)->at(i).y == 7 && piece == 2)){
+                    board[jumps.at(moveNum)->at(i).x][jumps.at(moveNum)->at(i).y] = piece + 2;
+                } else {
+                    board[jumps.at(moveNum)->at(i).x][jumps.at(moveNum)->at(i).y] = piece;
+                }
             } else {
-                // Gets coordinate of jumped square
+                // Gets coordinate of jumped square and clears it
                 jumpedX = (abs(jumps.at(moveNum)->at(i).x + jumps.at(moveNum)->at(i+1).x)) / 2;
                 jumpedY = (abs(jumps.at(moveNum)->at(i).y + jumps.at(moveNum)->at(i+1).y)) / 2;
                 board[jumpedX][jumpedY] = 0;
