@@ -96,7 +96,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     // NW Corner
     if(i > 1 && j > 1 && (player == 1 || king)){
         if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer+2)
-           && board[i-2][j-2] == 0 && legalJump(i-1, j-1, moveCopy)){
+           && (board[i-2][j-2] == 0 || (i-2 == move.at(0).x && j-2 == move.at(0).y))
+           && legalJump(i-1, j-1, moveCopy)){
             move.push_back(Coordinate(i-2, j-2));
             multiOptions = true;
             jump(move, i-2, j-2, player, otherPlayer, king);
@@ -106,7 +107,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     // NE Corner
     if(i < 6 && j > 1 && (player == 1 || king)){
         if((board[i+1][j-1] == otherPlayer || board[i+1][j-1] == otherPlayer+2)
-           && board[i+2][j-2] == 0 && legalJump(i+1, j-1, moveCopy)){
+           && (board[i+2][j-2] == 0 || (i+2 == move.at(0).x && j-2 == move.at(0).y))
+           && legalJump(i+1, j-1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
@@ -123,7 +125,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     // SW Corner
     if(i > 1 && j < 6 && (player == 2 || king)){
         if((board[i-1][j+1] == otherPlayer || board[i-1][j+1] == otherPlayer+2)
-           && board[i-2][j+2] == 0 && legalJump(i-1, j+1, moveCopy)){
+           && (board[i-2][j+2] == 0 || (i-2 == move.at(0).x && j+2 == move.at(0).y))
+           && legalJump(i-1, j+1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
@@ -140,7 +143,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     // SE Corner
     if(i < 6 && j < 6 && (player == 2 || king)){
         if((board[i+1][j+1] == otherPlayer || board[i+1][j+1] == otherPlayer+2)
-           && board[i+2][j+2] == 0 && legalJump(i+1, j+1, moveCopy)){
+           && (board[i+2][j+2] == 0 || (i+2 == move.at(0).x && j+2 == move.at(0).y))
+           && legalJump(i+1, j+1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
@@ -470,8 +474,9 @@ void testMoves(){
 }
 
 int main(int argc, const char * argv[]) {
+    // Reserves vector space so pointers don't get messed up when vector resizes
     moves.reserve(200);
-    initStartBoard();
+    initUserBoard();
     playGame();
     return 0;
 }
