@@ -43,10 +43,19 @@ void initStartBoard(){
 void initUserBoard(){
     // Reads in file with game board. See board key above.
     string file;
-    cout << "Enter name of file." << '\n';
+    cout << "Please enter the name of your board file.\nEach space should be either:\n  0 - empty space\n";
+    cout << "  1 - player 1 piece\n  2 - player 2 piece\n  3 - player 1 king\n  4 - player 2 king\n";
     cin >> file;
     ifstream fin;
     fin.open(file);
+    
+    // Checks for incorrect input
+    while(!fin.is_open()){
+        cout << "The file you entered cannot be opened.\nPlease enter a new file.\n";
+        cin >> file;
+        fin.open(file);
+    }
+    
     int square;
     
     int i = 0; int j = 0;
@@ -413,6 +422,24 @@ int getMoveChoice(){
 }
 
 void playGame(){
+    // Reserves vector space so pointers don't get messed up when vector resizes
+    moves.reserve(200);
+    
+    // User decides game board
+    double option;
+    cout << "Welcome to checkers!\nPlease respond with the number of your choice:\n";
+    cout << "1. Begin a new game\n2. Load a custom board\n";
+    cin >> option;
+    while(option != 1 && option != 2){
+        cout << "That was an invalid choice. Please respond with 1 or 2.\n";
+        cin >> option;
+    }
+    if(option == 1){
+        initStartBoard();
+    } else {
+        initUserBoard();
+    }
+    
     // Decides starting player
     int startingPlayer;
     if(userStarts()){
@@ -491,9 +518,6 @@ void testMoves(){
 }
 
 int main(int argc, const char * argv[]) {
-    // Reserves vector space so pointers don't get messed up when vector resizes
-    moves.reserve(200);
-    initUserBoard();
     playGame();
     return 0;
 }
