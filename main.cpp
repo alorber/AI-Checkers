@@ -17,14 +17,14 @@ using namespace std;
 
 // Board Key:
 // 0 = empty space, 1 = player 1, 2 = player 2, 3 = player 1 king, 4 = player 2 king
-int board[8][8] = {0};
+int currentBoard[8][8] = {0};
 
 // Initializes new game board
 void initStartBoard(){
     int player = 2;
     for(int i = 0, j = 0; j < 8; i++){
         if ((i+j+1)%2 == 0){
-            board[i][j] = player;
+            currentBoard[i][j] = player;
         }
         
         if (i == 7){
@@ -60,7 +60,7 @@ void initUserBoard(){
     
     int i = 0; int j = 0;
     while(fin >> square){
-        board[i][j] = square;
+        currentBoard[i][j] = square;
         i++;
         if(i == 7){
             i = 0;
@@ -97,7 +97,7 @@ bool legalJump(int jumpedI, int jumpedJ, const vector<Coordinate> & move){
 }
 
 // Handles jumping
-void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, bool king){
+void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, bool king, int board[8][8]){
     // Keeps track of multiple possible double jumps (i.e need to add another move to the list)
     bool multiOptions = false;
     vector<Coordinate> moveCopy = move;
@@ -114,7 +114,7 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
            && legalJump(i-1, j-1, moveCopy)){
             move.push_back(Coordinate(i-2, j-2));
             multiOptions = true;
-            jump(move, i-2, j-2, player, otherPlayer, king);
+            jump(move, i-2, j-2, player, otherPlayer, king, board);
         }
     }
     
@@ -127,11 +127,11 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
                 (moves.at(moves.size()-1)).push_back(Coordinate(i+2, j-2));
-                jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king);
+                jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king, board);
             } else {
                 move.push_back(Coordinate(i+2, j-2));
                 multiOptions = true;
-                jump(move, i+2, j-2, player, otherPlayer, king);
+                jump(move, i+2, j-2, player, otherPlayer, king, board);
             }
         }
     }
@@ -145,11 +145,11 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
                 (moves.at(moves.size()-1)).push_back(Coordinate(i-2, j+2));
-                jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king);
+                jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king, board);
             } else {
                 move.push_back(Coordinate(i-2, j+2));
                 multiOptions = true;
-                jump(move, i-2, j+2, player, otherPlayer, king);
+                jump(move, i-2, j+2, player, otherPlayer, king, board);
             }
         }
     }
@@ -163,18 +163,18 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
                 moves.push_back(moveCopy);
                 jumps.push_back(&moves.at(moves.size()-1));
                 (moves.at(moves.size()-1)).push_back(Coordinate(i+2, j+2));
-                jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king);
+                jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king, board);
             } else {
                 move.push_back(Coordinate(i+2, j+2));
                 multiOptions = true;
-                jump(move, i+2, j+2, player, otherPlayer, king);
+                jump(move, i+2, j+2, player, otherPlayer, king, board);
             }
         }
     }
 }
 
 //Finds all legal moves for player
-void getLegalMoves(int player){
+void getLegalMoves(int player, int board[8][8] = currentBoard){
 
     moves.clear();
     jumps.clear();
@@ -210,7 +210,7 @@ void getLegalMoves(int player){
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i-2, j-2)});
                             jumps.push_back(&moves.at(moves.size()-1));
-                            jump(moves.at(moves.size()-1), i-2, j-2, player, otherPlayer, king);
+                            jump(moves.at(moves.size()-1), i-2, j-2, player, otherPlayer, king, board);
                         }
                     }
                 }
@@ -227,7 +227,7 @@ void getLegalMoves(int player){
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i+2, j-2)});
                             jumps.push_back(&(moves.at(moves.size()-1)));
-                            jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king);
+                            jump(moves.at(moves.size()-1), i+2, j-2, player, otherPlayer, king, board);
                         }
                     }
                 }
@@ -247,7 +247,7 @@ void getLegalMoves(int player){
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i-2, j+2)});
                             jumps.push_back(&moves.at(moves.size()-1));
-                            jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king);
+                            jump(moves.at(moves.size()-1), i-2, j+2, player, otherPlayer, king, board);
                         }
                     }
                 }
@@ -264,7 +264,7 @@ void getLegalMoves(int player){
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i+2, j+2)});
                             jumps.push_back(&moves.at(moves.size()-1));
-                            jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king);
+                            jump(moves.at(moves.size()-1), i+2, j+2, player, otherPlayer, king, board);
                         }
                     }
                 }
@@ -310,7 +310,7 @@ void printBoard(){
         if(i == 0){
             cout << "|-" << j << "-|   ";
         }
-        cout << " | " << board[i][j];
+        cout << " | " << currentBoard[i][j];
         if(i == 7){
             cout << " | " << '\n' << "|---|    |---|---|---|---|---|---|---|---|" << '\n';
             i = -1;
@@ -321,7 +321,7 @@ void printBoard(){
 }
 
 // Takes the choice of move from legal move list and implements move
-void ImplementMove(int moveNum){
+void ImplementMove(int moveNum, int board[8][8] = currentBoard){
     moveNum--;
     bool jump = jumps.size() > 0;
     int piece;
@@ -376,7 +376,7 @@ bool userStarts(){
 }
 
 // Tests if a player has won
-bool gameOver(){
+bool gameOver(int board[8][8] = currentBoard){
     bool player1Wins = true;
     bool player2Wins = true;
     
@@ -516,6 +516,8 @@ void testMoves(){
         cin >> re;
     }
 }
+
+
 
 int main(int argc, const char * argv[]) {
     playGame();
