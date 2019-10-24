@@ -12,6 +12,7 @@
 #include <vector>
 #include <fstream>
 #include <math.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -409,6 +410,101 @@ bool gameOver(int board[8][8] = currentBoard){
     }
 }
 
+void copyBoard(int from[8][8], int to[8][8]){
+    for(int i = 0, j = 0; j < 8; i++){
+        
+        to[i][j] = from[i][j];
+        
+        if(i == 7){
+            i = -1;
+            j++;
+        }
+    }
+}
+
+// Simple evaluation functions based on the pieces left
+int evalFunc(int board[8][8]){
+    int val = 0;
+    for(int i = 0, j = 0; j < 8; i++){
+        if(j == 0 && board[i][j] == 2){
+            val+=2;
+        } else if(j == 7 && board[i][j] == 1){
+            val-=2;
+        }
+        
+        if(board[i][j] == 1){
+            val--;
+        } else if(board[i][j] == 2){
+            val++;
+        } else if(board[i][j] == 3){
+            val-=3;
+        } else if(board[i][j] == 4){
+            val += 3;
+        }
+        
+        if(i == 7){
+            i = -1;
+            j++;
+        }
+    }
+    return val;
+}
+
+// Alpha Beta Search
+int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, bool start = false){
+    if(depth == 0 || gameOver(board)){
+        return evalFunc(board); /*simple evaluation function*/
+    }
+    int boardCopy[8][8] = {0};
+    vector<vector<Coordinate>> nodeMoves;
+    vector<vector<Coordinate>*> nodeJumps;
+    nodeMoves.reserve(200);
+    int value;
+    int player = maxPlayer ? 2 : 1;
+    int bestMove = 1;
+    
+    getLegalMoves(player, board, nodeMoves, nodeJumps);
+    int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
+    if(maxPlayer){
+        value = -1000; /*Make -Infinity*/
+        for(int i = 1; i <= moveAmt; i++){
+            copyBoard(board, boardCopy);
+            ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
+            //value = max(value, alphaBeta(boardCopy, depth-1, alpha, beta, false));
+            if(alphaBeta(boardCopy, depth-1, alpha, beta, false) > value){
+                value = alphaBeta(boardCopy, depth-1, alpha, beta, false);
+                if(start){
+                    bestMove = i;
+                    cout << "The value was " << value << '\n';
+                    cout << "The best move was move #" << bestMove << '\n';
+                }
+            }
+            alpha = max(alpha, value);
+            if(alpha >= beta){
+                break;
+            }
+        }
+        if(start){
+            return bestMove;
+        } else {
+           return value;
+        }
+    } else {
+        value = 1000; /*Make Infinity*/
+        for(int i = 1; i <= moveAmt; i++){
+            copyBoard(board, boardCopy);
+            ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
+            value = min(value, alphaBeta(boardCopy, depth - 1, alpha, beta, true));
+            beta = min(beta, value);
+            if(alpha >= beta){
+                break;
+            }
+        }
+        return value;
+    }
+}
+
+
 // Gets user's move choice
 int getMoveChoice(){
     double moveChoice;
@@ -477,11 +573,20 @@ void playGame(){
             cout << "The AI is unable to move. You win!\n";
             return;
         }
+        
+        /*
+         
         // Picks random move for AI
         int numChoices = jumpsList.size() > 0 ? jumpsList.size() : movesList.size();
         srand(time(0));
         cout << "AI is moving...\n";
         ImplementMove((rand()%numChoices) + 1);
+        printBoard();
+        
+         */
+        
+        cout << "I am thinking...\n";
+        ImplementMove(alphaBeta(currentBoard, 8, -1000, 1000, true, true));
         printBoard();
         
         if(gameOver()){
