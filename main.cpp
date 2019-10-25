@@ -519,7 +519,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
 }
 
 // Implements Iterative Deepening for the Alpha Beta Search
-int iterativeDeepening(int board[8][8], int seconds){
+int iterativeDeepening(int seconds){
     timeLimitPassed = false;
     int bestMove = 1;
     int move;
@@ -623,7 +623,7 @@ void playGame(){
         }
         
         cout << "I am thinking...\n";
-        ImplementMove(iterativeDeepening(currentBoard, input));
+        ImplementMove(iterativeDeepening(input));
         printBoard();
         
         // Player 1 turn
