@@ -463,6 +463,12 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, b
     
     getLegalMoves(player, board, nodeMoves, nodeJumps);
     int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
+    
+    // If the AI has only one possible move, it will take it without alphaBeta
+    if(start && moveAmt == 1){
+        return bestMove;
+    }
+    
     if(maxPlayer){
         value = -1000; /*Make -Infinity*/
         for(int i = 1; i <= moveAmt; i++){
