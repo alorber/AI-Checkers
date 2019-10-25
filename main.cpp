@@ -13,6 +13,7 @@
 #include <fstream>
 #include <math.h>
 #include <algorithm>
+#include <time.h>
 
 using namespace std;
 
@@ -448,26 +449,34 @@ int evalFunc(int board[8][8]){
     return val;
 }
 
+// Global variable to keep track of time limit
+bool timeLimitPassed = false;
+
 // Alpha Beta Search
-int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, bool start = false){
-    if(depth == 0 || gameOver(board)){
-        return evalFunc(board); /*simple evaluation function*/
+int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, time_t endTime, bool root = false){
+    
+    // Checks if time limit has run out
+    if(timeLimitPassed || time(nullptr) >= endTime){
+        timeLimitPassed = true;
+        return 0;
     }
+    
+    // Runs evaluation function at max depth or end-game board
+    if(depth == 0 || gameOver(board)){
+        return evalFunc(board);
+    }
+    
     int boardCopy[8][8] = {0};
     vector<vector<Coordinate>> nodeMoves;
     vector<vector<Coordinate>*> nodeJumps;
     nodeMoves.reserve(200);
     int value;
+    int tmpValue;
     int player = maxPlayer ? 2 : 1;
     int bestMove = 1;
     
     getLegalMoves(player, board, nodeMoves, nodeJumps);
     int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
-    
-    // If the AI has only one possible move, it will take it without alphaBeta
-    if(start && moveAmt == 1){
-        return bestMove;
-    }
     
     if(maxPlayer){
         value = -1000; /*Make -Infinity*/
@@ -475,15 +484,10 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, b
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
             
-            // For testing
-            if(start){
-                cout << "The value was of move #" << i << " is ";
-                cout << alphaBeta(boardCopy, depth-1, alpha, beta, false) << '\n';
-            }
-            
-            if(alphaBeta(boardCopy, depth-1, alpha, beta, false) > value){
-                value = alphaBeta(boardCopy, depth-1, alpha, beta, false);
-                if(start){
+            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, false, endTime);
+            if(tmpValue > value){
+                value = tmpValue;
+                if(root){
                     bestMove = i;
                     cout << "The best move is move #" << bestMove << '\n';
                 }
@@ -494,7 +498,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, b
                 break;
             }
         }
-        if(start){
+        if(root){
             return bestMove;
         } else {
            return value;
@@ -504,7 +508,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, b
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
-            value = min(value, alphaBeta(boardCopy, depth - 1, alpha, beta, true));
+            value = min(value, alphaBeta(boardCopy, depth - 1, alpha, beta, true, endTime));
             beta = min(beta, value);
             if(alpha >= beta){
                 break;
@@ -514,6 +518,32 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, b
     }
 }
 
+// Implements Iterative Deepening for the Alpha Beta Search
+int iterativeDeepening(int board[8][8], int seconds){
+    timeLimitPassed = false;
+    int bestMove = 1;
+    int move;
+    time_t startTime = time(nullptr);
+    time_t endTime = startTime + seconds;
+    int depth = 1;
+    
+    // If there is only one move, do it
+    if(movesList.size() == 1 || jumpsList.size() == 1){
+        cout << "Depth: 0\nTime Searching: " << time(nullptr) - startTime << '\n';
+        return 1;
+    }
+    
+    // If there is less than half the time left, then it won't finish the next iteration, so stop
+    while((time(nullptr) + (seconds/2)) <= endTime){
+        move = alphaBeta(currentBoard, depth, -1000, 1000, true, endTime, true);
+        if(!timeLimitPassed){
+            bestMove = move;
+            depth++;
+        }
+    }
+    cout << "Depth: " << depth << "\nTime Searching: " << time(nullptr) - startTime << '\n';
+    return bestMove;
+}
 
 // Gets user's move choice
 int getMoveChoice(){
@@ -535,18 +565,26 @@ void playGame(){
     movesList.reserve(200);
     
     // User decides game board
-    double option;
+    double input;
     cout << "Welcome to checkers!\nPlease respond with the number of your choice:\n";
     cout << "1. Begin a new game\n2. Load a custom board\n";
-    cin >> option;
-    while(option != 1 && option != 2){
+    cin >> input;
+    while(input != 1 && input != 2){
         cout << "That was an invalid choice. Please respond with 1 or 2.\n";
-        cin >> option;
+        cin >> input;
     }
-    if(option == 1){
+    if(input == 1){
         initStartBoard();
     } else {
         initUserBoard();
+    }
+    
+    // User inputs time limit
+    cout << "Please enter the number of seconds (integer value) that the AI has to move\n";
+    cin >> input;
+    while(round(input) <= 1){
+        cout << "That's not enough time for the AI to find a move. Please enter an integer value greater than 1\n";
+        cin >> input;
     }
     
     // Decides starting player
@@ -585,7 +623,7 @@ void playGame(){
         }
         
         cout << "I am thinking...\n";
-        ImplementMove(alphaBeta(currentBoard, 10, -1000, 1000, true, true));
+        ImplementMove(iterativeDeepening(currentBoard, input));
         printBoard();
         
         // Player 1 turn
