@@ -63,7 +63,7 @@ void initUserBoard(){
     while(fin >> square){
         currentBoard[i][j] = square;
         i++;
-        if(i == 7){
+        if(i == 8){
             i = 0;
             j++;
         }
@@ -384,7 +384,7 @@ bool gameOver(int board[8][8] = currentBoard){
     bool player1Wins = true;
     bool player2Wins = true;
     
-    for(int i = 0, j = 0; i < 8; i++){
+    for(int i = 0, j = 0; j < 8; i++){
         if(player2Wins && (board[i][j] == 1 || board[i][j] == 3)){
             player2Wins = false;
         } else if(player1Wins && (board[i][j] == 2 || board[i][j] == 4)){
@@ -402,10 +402,8 @@ bool gameOver(int board[8][8] = currentBoard){
     }
     
     if (player1Wins) {
-        cout << "Congrats! You win! \n";
         return true;
     } else {
-        cout << "The AI has won.\n";
         return true;
     }
 }
@@ -427,19 +425,19 @@ int evalFunc(int board[8][8]){
     int val = 0;
     for(int i = 0, j = 0; j < 8; i++){
         if(j == 0 && board[i][j] == 2){
-            val+=2;
+            val+=1;
         } else if(j == 7 && board[i][j] == 1){
-            val-=2;
+            val-=1;
         }
         
         if(board[i][j] == 1){
-            val--;
+            val-=2;
         } else if(board[i][j] == 2){
-            val++;
+            val+=2;
         } else if(board[i][j] == 3){
-            val-=3;
+            val-=4;
         } else if(board[i][j] == 4){
-            val += 3;
+            val += 4;
         }
         
         if(i == 7){
@@ -470,15 +468,21 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, b
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
-            //value = max(value, alphaBeta(boardCopy, depth-1, alpha, beta, false));
+            
+            // For testing
+            if(start){
+                cout << "The value was of move #" << i << " is ";
+                cout << alphaBeta(boardCopy, depth-1, alpha, beta, false) << '\n';
+            }
+            
             if(alphaBeta(boardCopy, depth-1, alpha, beta, false) > value){
                 value = alphaBeta(boardCopy, depth-1, alpha, beta, false);
                 if(start){
                     bestMove = i;
-                    cout << "The value was " << value << '\n';
-                    cout << "The best move was move #" << bestMove << '\n';
+                    cout << "The best move is move #" << bestMove << '\n';
                 }
             }
+            
             alpha = max(alpha, value);
             if(alpha >= beta){
                 break;
@@ -574,24 +578,9 @@ void playGame(){
             return;
         }
         
-        /*
-         
-        // Picks random move for AI
-        int numChoices = jumpsList.size() > 0 ? jumpsList.size() : movesList.size();
-        srand(time(0));
-        cout << "AI is moving...\n";
-        ImplementMove((rand()%numChoices) + 1);
-        printBoard();
-        
-         */
-        
         cout << "I am thinking...\n";
-        ImplementMove(alphaBeta(currentBoard, 8, -1000, 1000, true, true));
+        ImplementMove(alphaBeta(currentBoard, 10, -1000, 1000, true, true));
         printBoard();
-        
-        if(gameOver()){
-            return;
-        }
         
         // Player 1 turn
         getLegalMoves(1);
