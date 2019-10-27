@@ -429,20 +429,21 @@ void copyBoard(int from[8][8], int to[8][8]){
 int evalFunc(int board[8][8]){
     int val = 0;
     for(int i = 0, j = 0; j < 8; i++){
+        // Top or Bottom Rows
         if(j == 0 && board[i][j] == 2){
-            val+=1;
+            val+=30;
         } else if(j == 7 && board[i][j] == 1){
-            val-=1;
+            val-=30;
         }
-        
+        // Pawns
         if(board[i][j] == 1){
-            val-=2;
+            val-=60;
         } else if(board[i][j] == 2){
-            val+=2;
-        } else if(board[i][j] == 3){
-            val-=4;
+            val+=60;
+        } else if(board[i][j] == 3){ // Kings
+            val-=100;
         } else if(board[i][j] == 4){
-            val += 4;
+            val += 100;
         }
         
         if(i == 7){
@@ -450,6 +451,8 @@ int evalFunc(int board[8][8]){
             j++;
         }
     }
+    // Random number added to make it randomly choose between multiple "equal" moves
+    val += rand() % 10;
     return val;
 }
 
@@ -483,7 +486,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
     int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
     
     if(maxPlayer){
-        value = -1000; /*Make -Infinity*/
+        value = -9000; /*Make -Infinity*/
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
@@ -509,7 +512,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
            return value;
         }
     } else {
-        value = 1000; /*Make Infinity*/
+        value = 9000; /*Make Infinity*/
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
@@ -554,7 +557,7 @@ int iterativeDeepening(int seconds, bool player2 = true){
     
     // If there is less than half the time left, then it won't finish the next iteration, so stop
     while((time(nullptr) + (seconds/2)) <= endTime){
-        move = alphaBeta(currentBoard, depth, -1000, 1000, player2, endTime, true);
+        move = alphaBeta(currentBoard, depth, -9000, 9000, player2, endTime, true);
         if(!timeLimitPassed){
             bestMove = move;
             depth++;
@@ -717,6 +720,7 @@ void playGame(){
 }
 
 int main(int argc, const char * argv[]) {
+    srand(time(nullptr));
     playGame();
     return 0;
 }
