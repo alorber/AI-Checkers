@@ -364,13 +364,17 @@ void ImplementMove(int moveNum, int board[8][8] = currentBoard, vector<vector<Co
 }
 
 // Asks user for starting player
-bool userStarts(){
+bool player1Starts(bool userPlaying){
     string resp;
-    cout << "Would you like to go first? (Y/N)" << '\n';
+    if(userPlaying){
+        cout << "Would you like to go first? (Y/N) \n";
+    } else {
+        cout << "Would you like player 1 to go first? (Y/N) \n";
+    }
+    
     cin >> resp;
     while(resp.compare("Y") != 0 && resp.compare("N") != 0){
         cout << "That was an invalid response. Please respond with 'Y' or 'N'." << '\n';
-        cout << "Would you like to go first? (Y/N)" << '\n';
         cin >> resp;
     }
     if(resp.compare("Y") == 0){
@@ -487,9 +491,10 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
             tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, false, endTime);
             if(tmpValue > value){
                 value = tmpValue;
+                
                 if(root){
                     bestMove = i;
-                    cout << "The best move is move #" << bestMove << '\n';
+                    //cout << "The best move is move #" << bestMove << '\n';
                 }
             }
             
@@ -508,18 +513,32 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
-            value = min(value, alphaBeta(boardCopy, depth - 1, alpha, beta, true, endTime));
+            
+            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, true, endTime);
+            if(tmpValue < value){
+                value = tmpValue;
+                
+                if(root){
+                    bestMove = i;
+                    //cout << "The best move is move #" << bestMove << '\n';
+                }
+            }
+            
             beta = min(beta, value);
             if(alpha >= beta){
                 break;
             }
         }
-        return value;
+        if(root){
+            return bestMove;
+        } else {
+            return value;
+        }
     }
 }
 
 // Implements Iterative Deepening for the Alpha Beta Search
-int iterativeDeepening(int seconds){
+int iterativeDeepening(int seconds, bool player2 = true){
     timeLimitPassed = false;
     int bestMove = 1;
     int move;
@@ -535,7 +554,7 @@ int iterativeDeepening(int seconds){
     
     // If there is less than half the time left, then it won't finish the next iteration, so stop
     while((time(nullptr) + (seconds/2)) <= endTime){
-        move = alphaBeta(currentBoard, depth, -1000, 1000, true, endTime, true);
+        move = alphaBeta(currentBoard, depth, -1000, 1000, player2, endTime, true);
         if(!timeLimitPassed){
             bestMove = move;
             depth++;
@@ -544,6 +563,46 @@ int iterativeDeepening(int seconds){
     cout << "Depth: " << depth << "\nTime Searching: " << time(nullptr) - startTime << '\n';
     return bestMove;
 }
+
+void playAIvsAI(int startingPlayer, int seconds){
+    if(startingPlayer == 1){
+        getLegalMoves(1);
+        // If no moves then game ends
+        if (movesList.size() == 0) {
+            cout << "Player 1 has no possible moves. Player 2 wins.\n";
+            return;
+        }
+        
+        cout << "Player 1 is thinking...\n";
+        ImplementMove(iterativeDeepening(floor(seconds), false));
+        printBoard();
+    }
+    while(true){
+        // Player 2 turn
+        getLegalMoves(2);
+        // If no moves then game ends
+        if(movesList.size() == 0){
+            cout << "Player 2 has no possible moves. Player 1 wins.\n";
+            return;
+        }
+        
+        cout << "Player 2 is thinking...\n";
+        ImplementMove(iterativeDeepening(floor(seconds)));
+        printBoard();
+        
+        // Player 1 turn
+        getLegalMoves(1);
+        // If no moves then game ends
+        if(movesList.size() == 0) {
+            cout << "Player 1 has no possible moves. Player 2 wins.\n";
+            return;
+        }
+        cout << "Player 1 is thinking...\n";
+        ImplementMove(iterativeDeepening(floor(seconds), false));
+        printBoard();
+    }
+}
+
 
 // Gets user's move choice
 int getMoveChoice(){
@@ -579,26 +638,43 @@ void playGame(){
         initUserBoard();
     }
     
+    // User Vs AI or AI Vs AI
+    bool AIvsAI = false;
+    cout << "Please choose a game mode:\n";
+    cout << "1. User Vs AI\n2. AI Vs AI\n";
+    cin >> input;
+    while(input != 1 && input != 2){
+        cout << "That was an invalid choice. Please respond with 1 or 2.\n";
+        cin >> input;
+    }
+    AIvsAI = (input == 2);
+    
     // User inputs time limit
     cout << "Please enter the number of seconds (integer value) that the AI has to move\n";
     cin >> input;
-    while(round(input) <= 1){
-        cout << "That's not enough time for the AI to find a move. Please enter an integer value greater than 1\n";
+    while(floor(input) <= 1){
+        cout << "Please enter an integer value greater than 1\n";
         cin >> input;
     }
     
     // Decides starting player
     int startingPlayer;
-    if(userStarts()){
+    if(player1Starts(!AIvsAI)){
         startingPlayer = 1;
     } else {
         startingPlayer = 2;
     }
-    cout << "The starting player is " << startingPlayer << ".\n";
+    cout << "The starting player is player " << startingPlayer << ".\n\n";
     
     printBoard();
     // Checks if the board can be played
     if(gameOver()){
+        return;
+    }
+    
+    // Differs here if AI vs AI
+    if(AIvsAI){
+        playAIvsAI(startingPlayer, input);
         return;
     }
     
@@ -613,7 +689,7 @@ void playGame(){
         ImplementMove(getMoveChoice());
         printBoard();
     }
-    while(!gameOver()){
+    while(true){
         // Player 2 turn
         getLegalMoves(2);
         // If no moves then game ends
@@ -623,7 +699,7 @@ void playGame(){
         }
         
         cout << "I am thinking...\n";
-        ImplementMove(iterativeDeepening(input));
+        ImplementMove(iterativeDeepening(floor(input)));
         printBoard();
         
         // Player 1 turn
@@ -636,7 +712,6 @@ void playGame(){
         printMoves();
         ImplementMove(getMoveChoice());
         printBoard();
-        
     }
     
 }
