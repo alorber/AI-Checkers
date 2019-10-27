@@ -385,7 +385,7 @@ bool player1Starts(bool userPlaying){
 }
 
 // Tests if a player has won
-bool gameOver(int board[8][8] = currentBoard){
+int gameOver(int board[8][8] = currentBoard){
     bool player1Wins = true;
     bool player2Wins = true;
     
@@ -397,7 +397,7 @@ bool gameOver(int board[8][8] = currentBoard){
         }
         
         if (!player1Wins && !player2Wins) {
-            return false;
+            return 0;
         }
         
         if(i == 7){
@@ -407,9 +407,9 @@ bool gameOver(int board[8][8] = currentBoard){
     }
     
     if (player1Wins) {
-        return true;
+        return 1;
     } else {
-        return true;
+        return 2;
     }
 }
 
@@ -425,8 +425,8 @@ void copyBoard(int from[8][8], int to[8][8]){
     }
 }
 
-// Simple evaluation functions based on the pieces left
-int evalFunc(int board[8][8]){
+// Heuristic for player 1
+int evalFunc1(int board[8][8], int player){
     int val = 0;
     for(int i = 0, j = 0; j < 8; i++){
         // Top or Bottom Rows
@@ -451,6 +451,45 @@ int evalFunc(int board[8][8]){
             j++;
         }
     }
+    
+    if(player == 1 && gameOver(board) == 1){
+        val -= 150;
+    } else if (player == 2 && gameOver(board) == 2){
+        val += 150;
+    }
+    
+    // Random number added to make it randomly choose between multiple "equal" moves
+    val += rand() % 10;
+    return val;
+}
+
+// Heuristic for player 2
+int evalFunc2(int board[8][8]){
+    int val = 0;
+    for(int i = 0, j = 0; j < 8; i++){
+        // Top or Bottom Rows
+//        if(j == 0 && board[i][j] == 2){
+//            val+=30;
+//        } else if(j == 7 && board[i][j] == 1){
+//            val-=30;
+//        }
+        // Pawns
+        if(board[i][j] == 1){
+            val-=60;
+        } else if(board[i][j] == 2){
+            val+=60;
+        } else if(board[i][j] == 3){ // Kings
+            val-=100;
+        } else if(board[i][j] == 4){
+            val += 100;
+        }
+        
+        if(i == 7){
+            i = -1;
+            j++;
+        }
+    }
+    
     // Random number added to make it randomly choose between multiple "equal" moves
     val += rand() % 10;
     return val;
@@ -460,7 +499,8 @@ int evalFunc(int board[8][8]){
 bool timeLimitPassed = false;
 
 // Alpha Beta Search
-int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, time_t endTime, bool root = false){
+int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, time_t endTime,
+    /* Player who began AlphaBeta */ int currentPlayer,bool root = false){
     
     // Checks if time limit has run out
     if(timeLimitPassed || time(nullptr) >= endTime){
@@ -468,9 +508,11 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
         return 0;
     }
     
+    int player = maxPlayer ? 2 : 1;
+    
     // Runs evaluation function at max depth or end-game board
-    if(depth == 0 || gameOver(board)){
-        return evalFunc(board);
+    if(depth == 0 || gameOver(board) > 0){
+        return currentPlayer == 1 ? evalFunc1(board, player) : evalFunc2(board);
     }
     
     int boardCopy[8][8] = {0};
@@ -479,7 +521,6 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
     nodeMoves.reserve(200);
     int value;
     int tmpValue;
-    int player = maxPlayer ? 2 : 1;
     int bestMove = 1;
     
     getLegalMoves(player, board, nodeMoves, nodeJumps);
@@ -491,7 +532,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
             
-            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, false, endTime);
+            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, false, endTime, currentPlayer);
             if(tmpValue > value){
                 value = tmpValue;
                 
@@ -517,7 +558,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
             
-            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, true, endTime);
+            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, true, endTime, currentPlayer);
             if(tmpValue < value){
                 value = tmpValue;
                 
@@ -548,6 +589,7 @@ int iterativeDeepening(int seconds, bool player2 = true){
     time_t startTime = time(nullptr);
     time_t endTime = startTime + seconds;
     int depth = 1;
+    int player = player2 ? 2 : 1;
     
     // If there is only one move, do it
     if(movesList.size() == 1 || jumpsList.size() == 1){
@@ -557,7 +599,7 @@ int iterativeDeepening(int seconds, bool player2 = true){
     
     // If there is less than half the time left, then it won't finish the next iteration, so stop
     while((time(nullptr) + (seconds/2)) <= endTime){
-        move = alphaBeta(currentBoard, depth, -9000, 9000, player2, endTime, true);
+        move = alphaBeta(currentBoard, depth, -9000, 9000, player2, endTime, player, true);
         if(!timeLimitPassed){
             bestMove = move;
             depth++;
@@ -671,7 +713,7 @@ void playGame(){
     
     printBoard();
     // Checks if the board can be played
-    if(gameOver()){
+    if(gameOver() > 0){
         return;
     }
     
