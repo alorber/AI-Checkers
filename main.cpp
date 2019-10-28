@@ -439,6 +439,18 @@ int evalFunc(int board[8][8], int player, int depth){
         } else if(j == 7 && board[i][j] == 1){
             val-=30;
         }
+        
+        // Sides Columns
+        if(i == 0 && (board[i][j] == 1 || board[i][j] == 3)){
+            val-=15;
+        } else if(i == 0 && (board[i][j] == 2 || board[i][j] == 4)){
+            val+=15;
+        } else if(i == 7 && (board[i][j] == 1 || board[i][j] == 3)){
+            val-=15;
+        } else if(i == 7 && (board[i][j] == 2 || board[i][j] == 4)){
+            val+=15;
+        }
+        
         // Pawns
         if(board[i][j] == 1){
             val-=60;
@@ -458,9 +470,9 @@ int evalFunc(int board[8][8], int player, int depth){
     
     // Makes AI take the closer win and push off loss
     if(player == 2 && gameOver(board) == 1){
-        val -= 200 + (depth * 50);
+        val -= 500 + (depth * 50);
     } else if (player == 1 && gameOver(board) == 2){
-        val += 200 + (depth * 50);
+        val += 500 + (depth * 50);
     }
     
     // Random number added to make it randomly choose between multiple "equal" moves
@@ -574,7 +586,7 @@ int iterativeDeepening(int seconds, bool player2 = true){
             depth++;
         }
     }
-    cout << "Depth: " << depth << "\nTime Searching: " << time(nullptr) - startTime << "Seconds\n";
+    cout << "Depth: " << depth << "\nTime Searching: " << time(nullptr) - startTime << " Seconds\n";
     return bestMove;
 }
 
