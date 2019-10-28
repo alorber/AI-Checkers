@@ -389,7 +389,7 @@ bool player1Starts(bool userPlaying){
 }
 
 // Tests if a player has won
-bool gameOver(int board[8][8] = currentBoard){
+int gameOver(int board[8][8] = currentBoard){
     bool player1Wins = true;
     bool player2Wins = true;
     
@@ -401,7 +401,7 @@ bool gameOver(int board[8][8] = currentBoard){
         }
         
         if (!player1Wins && !player2Wins) {
-            return false;
+            return 0;
         }
         
         if(i == 7){
@@ -411,9 +411,9 @@ bool gameOver(int board[8][8] = currentBoard){
     }
     
     if (player1Wins) {
-        return true;
+        return 1;
     } else {
-        return true;
+        return 2;
     }
 }
 
@@ -429,8 +429,8 @@ void copyBoard(int from[8][8], int to[8][8]){
     }
 }
 
-// Simple evaluation functions based on the pieces left
-int evalFunc(int board[8][8]){
+// Heuristic function
+int evalFunc(int board[8][8], int player, int depth){
     int val = 0;
     for(int i = 0, j = 0; j < 8; i++){
         // Top or Bottom Rows
@@ -455,6 +455,14 @@ int evalFunc(int board[8][8]){
             j++;
         }
     }
+    
+    // Makes AI take the closer win and push off loss
+    if(player == 2 && gameOver(board) == 1){
+        val -= 200 + (depth * 50);
+    } else if (player == 1 && gameOver(board) == 2){
+        val += 200 + (depth * 50);
+    }
+    
     // Random number added to make it randomly choose between multiple "equal" moves
     val += rand() % 10;
     return val;
@@ -472,9 +480,11 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
         return 0;
     }
     
+    int player = maxPlayer ? 2 : 1;
+    
     // Runs evaluation function at max depth or end-game board
-    if(depth == 0 || gameOver(board)){
-        return evalFunc(board);
+    if(depth == 0 || gameOver(board) > 0){
+        return evalFunc(board, player, depth);
     }
     
     int boardCopy[8][8] = {0};
@@ -483,14 +493,13 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
     nodeMoves.reserve(200);
     int value;
     int tmpValue;
-    int player = maxPlayer ? 2 : 1;
     int bestMove = 1;
     
     getLegalMoves(player, board, nodeMoves, nodeJumps);
     int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
     
     if(maxPlayer){
-        value = -9000; /*Make -Infinity*/
+        value = -90000; /*Make -Infinity*/
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
@@ -501,7 +510,6 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
                 
                 if(root){
                     bestMove = i;
-                    //cout << "The best move is move #" << bestMove << '\n';
                 }
             }
             
@@ -516,7 +524,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
            return value;
         }
     } else {
-        value = 9000; /*Make Infinity*/
+        value = 90000; /*Make Infinity*/
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
@@ -527,7 +535,6 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
                 
                 if(root){
                     bestMove = i;
-                    //cout << "The best move is move #" << bestMove << '\n';
                 }
             }
             
@@ -561,13 +568,13 @@ int iterativeDeepening(int seconds, bool player2 = true){
     
     // If there is less than half the time left, then it won't finish the next iteration, so stop
     while((time(nullptr) + (seconds/2)) <= endTime){
-        move = alphaBeta(currentBoard, depth, -9000, 9000, player2, endTime, true);
+        move = alphaBeta(currentBoard, depth, -90000, 90000, player2, endTime, true);
         if(!timeLimitPassed){
             bestMove = move;
             depth++;
         }
     }
-    cout << "Depth: " << depth << "\nTime Searching: " << time(nullptr) - startTime << '\n';
+    cout << "Depth: " << depth << "\nTime Searching: " << time(nullptr) - startTime << "Seconds\n";
     return bestMove;
 }
 
@@ -675,7 +682,7 @@ void playGame(){
     
     printBoard();
     // Checks if the board can be played
-    if(gameOver()){
+    if(gameOver() > 0){
         return;
     }
     
