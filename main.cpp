@@ -430,36 +430,45 @@ void copyBoard(int from[8][8], int to[8][8]){
 }
 
 // Heuristic function
-int evalFunc(int board[8][8], int player, int depth){
+int evalFunc(int board[8][8], int player, int depth, bool noMoves){
     int val = 0;
+    bool p1PawnsLeft = false;
+    bool p2PawnsLeft = false;
+    int p1Bottom = 0;
+    int p2Top = 0;
+    
     for(int i = 0, j = 0; j < 8; i++){
         // Top or Bottom Rows
-        if(j == 0 && board[i][j] == 2){
-            val+=30;
-        } else if(j == 7 && board[i][j] == 1){
-            val-=30;
+        if(j == 0 && (board[i][j] == 2 || board[i][j] == 4)){
+            val+=20;
+            p2Top++;
+        } else if(j == 7 && (board[i][j] == 1 || board[i][j] == 3)){
+            val-=20;
+            p1Bottom++;
         }
         
         // Sides Columns
         if(i == 0 && (board[i][j] == 1 || board[i][j] == 3)){
-            val-=15;
+            val-=20;
         } else if(i == 0 && (board[i][j] == 2 || board[i][j] == 4)){
-            val+=15;
+            val+=20;
         } else if(i == 7 && (board[i][j] == 1 || board[i][j] == 3)){
-            val-=15;
+            val-=20;
         } else if(i == 7 && (board[i][j] == 2 || board[i][j] == 4)){
-            val+=15;
+            val+=20;
         }
         
         // Pawns
         if(board[i][j] == 1){
-            val-=60;
+            val-=80;
+            p1PawnsLeft = true;
         } else if(board[i][j] == 2){
-            val+=60;
+            val+=80;
+            p2PawnsLeft = true;
         } else if(board[i][j] == 3){ // Kings
-            val-=100;
+            val-=120;
         } else if(board[i][j] == 4){
-            val += 100;
+            val += 120;
         }
         
         if(i == 7){
@@ -467,11 +476,18 @@ int evalFunc(int board[8][8], int player, int depth){
             j++;
         }
     }
+    // Protects home more if the other player has pawns left to make kings
+    if(p1PawnsLeft){
+        val += (p2Top * 20);
+    }
+    if(p2PawnsLeft){
+        val -= (p1Bottom * 20);
+    }
     
     // Makes AI take the closer win and push off loss
-    if(player == 2 && gameOver(board) == 1){
+    if(player == 2 && (noMoves || gameOver(board) == 1)){
         val -= 500 + (depth * 50);
-    } else if (player == 1 && gameOver(board) == 2){
+    } else if (player == 1 && (noMoves || gameOver(board) == 2)){
         val += 500 + (depth * 50);
     }
     
@@ -492,13 +508,6 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
         return 0;
     }
     
-    int player = maxPlayer ? 2 : 1;
-    
-    // Runs evaluation function at max depth or end-game board
-    if(depth == 0 || gameOver(board) > 0){
-        return evalFunc(board, player, depth);
-    }
-    
     int boardCopy[8][8] = {0};
     vector<vector<Coordinate>> nodeMoves;
     vector<vector<Coordinate>*> nodeJumps;
@@ -506,9 +515,16 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
     int value;
     int tmpValue;
     int bestMove = 1;
+    int player = maxPlayer ? 2 : 1;
     
     getLegalMoves(player, board, nodeMoves, nodeJumps);
     int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
+    
+    
+    // Runs evaluation function at max depth or end-game board
+    if(depth == 0 || moveAmt == 0 || gameOver(board) > 0){
+        return evalFunc(board, player, depth, (moveAmt == 0));
+    }
     
     if(maxPlayer){
         value = -90000; /*Make -Infinity*/
