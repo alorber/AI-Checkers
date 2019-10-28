@@ -314,7 +314,11 @@ void printBoard(){
         if(i == 0){
             cout << "|-" << j << "-|   ";
         }
-        cout << " | " << currentBoard[i][j];
+        if(((i+j+1)%2 == 0)){
+            cout << " | " << currentBoard[i][j];
+        } else {
+            cout << " |  ";
+        }
         if(i == 7){
             cout << " | " << '\n' << "|---|    |---|---|---|---|---|---|---|---|" << '\n';
             i = -1;
