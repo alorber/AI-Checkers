@@ -20,6 +20,12 @@ using namespace std;
 // Board Key:
 // 0 = empty space, 1 = player 1, 2 = player 2, 3 = player 1 king, 4 = player 2 king
 int currentBoard[8][8] = {0};
+// Global variables for heuristic
+int currentTotalPcs = 0;
+int currentP1Pcs = 0;
+int currentP2Pcs = 0;
+int currentP1Kings = 0;
+int currentP2Kings = 0;
 
 // Initializes new game board
 void initStartBoard(){
@@ -39,6 +45,9 @@ void initStartBoard(){
             }
         }
     }
+    currentTotalPcs = 24;
+    currentP1Pcs = 12;
+    currentP2Pcs = 12;
 }
 
 // Initializes user-set game board
@@ -64,6 +73,20 @@ void initUserBoard(){
     while(fin >> square){
         if ((i+j+1)%2 == 0){
             currentBoard[i][j] = square;
+            // Keeps track of # pcs
+            if(square == 1 || square == 3){
+                currentP1Pcs++;
+                currentTotalPcs++;
+                if(square == 3){
+                    currentP1Kings++;
+                }
+            } else if(square == 2 || square == 4){
+                currentP2Pcs++;
+                currentTotalPcs++;
+                if(square == 4){
+                    currentP2Kings++;
+                }
+            }
         }
         do{
             i++;
@@ -343,6 +366,12 @@ void ImplementMove(int moveNum, int board[8][8] = currentBoard, vector<vector<Co
         // Makes piece king when needed
         if ((moves.at(moveNum).at(1).y == 0 && piece == 1) || (moves.at(moveNum).at(1).y == 7 && piece == 2)) {
             board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = piece + 2;
+            // Keeps track of # pcs
+            if(piece == 1){
+                currentP1Kings++;
+            } else{
+                currentP2Kings++;
+            }
         } else {
             board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = piece;
         }
@@ -365,6 +394,22 @@ void ImplementMove(int moveNum, int board[8][8] = currentBoard, vector<vector<Co
                 // Gets coordinate of jumped square and clears it
                 jumpedX = (abs(jumps.at(moveNum)->at(i).x + jumps.at(moveNum)->at(i+1).x)) / 2;
                 jumpedY = (abs(jumps.at(moveNum)->at(i).y + jumps.at(moveNum)->at(i+1).y)) / 2;
+                // Keeps track of # pcs
+                int jumpedPc = board[jumpedX][jumpedY];
+                if(board == currentBoard){
+                    currentTotalPcs--;
+                    if(jumpedPc == 1 || jumpedPc == 3){
+                        currentP1Pcs--;
+                        if(jumpedPc == 3){
+                            currentP1Kings--;
+                        }
+                    } else {
+                        currentP2Pcs--;
+                        if(jumpedPc == 4){
+                            currentP2Kings--;
+                        }
+                    }
+                }
                 board[jumpedX][jumpedY] = 0;
             }
         }
@@ -434,45 +479,69 @@ void copyBoard(int from[8][8], int to[8][8]){
 }
 
 // Heuristic function
-int evalFunc(int board[8][8], int player, int depth, bool noMoves){
+int evalFunc(int board[8][8], int player, int depth, bool noMoves, int numMoves){
     int val = 0;
-    bool p1PawnsLeft = false;
-    bool p2PawnsLeft = false;
+    int p1Pawns = 0;
+    int p2Pawns = 0;
+    int p1Kings = 0;
+    int p2Kings = 0;
     int p1Bottom = 0;
     int p2Top = 0;
+    int p1MidBox = 0;
+    int p2MidBox = 0;
+    int p1MidRows = 0;
+    int p2MidRows = 0;
+    int p1Pcs = 0;
+    int p2Pcs = 0;
+    int totalpcs = 0;
     
     for(int i = 0, j = 0; j < 8; i++){
-        // Top or Bottom Rows
+        // Home Rows (+- 50)
         if(j == 0 && (board[i][j] == 2 || board[i][j] == 4)){
-            val+=20;
             p2Top++;
         } else if(j == 7 && (board[i][j] == 1 || board[i][j] == 3)){
-            val-=20;
             p1Bottom++;
         }
         
-        // Sides Columns
-        if(i == 0 && (board[i][j] == 1 || board[i][j] == 3)){
-            val-=20;
-        } else if(i == 0 && (board[i][j] == 2 || board[i][j] == 4)){
-            val+=20;
-        } else if(i == 7 && (board[i][j] == 1 || board[i][j] == 3)){
-            val-=20;
-        } else if(i == 7 && (board[i][j] == 2 || board[i][j] == 4)){
-            val+=20;
+        // Pawns (+- 100)
+        if(board[i][j] == 1){
+            val-=100;
+            p1Pawns++;
+            p1Pcs++;
+            totalpcs++;
+        } else if(board[i][j] == 2){
+            val+=100;
+            p2Pawns++;
+            p2Pcs++;
+            totalpcs++;
+        } else if(board[i][j] == 3){ // Kings (+- 155)
+            val-=155;
+            p1Kings++;
+            p1Pcs++;
+            totalpcs++;
+        } else if(board[i][j] == 4){
+            val += 155;
+            p2Kings++;
+            p2Pcs++;
+            totalpcs++;
         }
         
-        // Pawns
-        if(board[i][j] == 1){
-            val-=80;
-            p1PawnsLeft = true;
-        } else if(board[i][j] == 2){
-            val+=80;
-            p2PawnsLeft = true;
-        } else if(board[i][j] == 3){ // Kings
-            val-=120;
-        } else if(board[i][j] == 4){
-            val += 120;
+        // Middle box (+- 50)
+        if((i >= 2 && i <= 5) && (j >= 2 && j <= 5)){
+            if (board[i][j] == 2 || board[i][j] == 4) {
+                p2MidBox++;
+            } else if(board[i][j] == 2 || board[i][j] == 4){
+                p1MidBox++;
+            }
+        }
+        
+        // Mid-board, but not in middle box (+- 10)
+        if((i < 2 || i > 5) && (j >= 2 && j <= 5)){
+            if (board[i][j] == 2 || board[i][j] == 4) {
+                p2MidRows++;
+            } else if(board[i][j] == 2 || board[i][j] == 4){
+                p1MidRows++;
+            }
         }
         
         if(i == 7){
@@ -480,19 +549,41 @@ int evalFunc(int board[8][8], int player, int depth, bool noMoves){
             j++;
         }
     }
-    // Protects home more if the other player has pawns left to make kings
-    if(p1PawnsLeft){
-        val += (p2Top * 20);
+    
+    // Uses different heuristic for end-game. Players care more about kings and total pcs left.
+    // End-game is "triggered" when one player has less than 2/3 of the other player's pcs, when there are
+    //      10 or less pcs on the board, or when there are less than 15 pcs and one player has more kings.
+    if(currentTotalPcs <= 10 || (currentP2Pcs*(2/3) >= currentP1Pcs) || (currentP1Pcs*(2/3) >= currentP2Pcs)
+       || (currentTotalPcs <= 14 && abs(currentP1Kings - currentP2Kings) > 0)){
+        // Different depending on who has more pcs. Winner will want to trade more.
+        if(currentP2Pcs > currentP1Pcs && p2Pcs > p1Pcs){
+            val += ((currentTotalPcs - totalpcs)*30);
+        } else if(currentP1Pcs > currentP2Pcs && p1Pcs > p2Pcs) {
+            val -= ((currentTotalPcs - totalpcs)*30);
+        }
+        // Kings are more valuable (+- 20)
+        val += p2Kings*20;
+        val -= p1Kings*20;
+        
+        // If early or mid game, positioning and pcs count matters more
+    } else {
+        val += ((p2Top*50) + (p2MidBox*50) + (p2MidRows*10));
+        val -= ((p1Bottom*50) + (p1MidBox*50) + (p1MidRows*10));
     }
-    if(p2PawnsLeft){
-        val -= (p1Bottom * 20);
+    
+    // Values home row more if other player still has pawns to king (+- 40)
+    if(p1Pawns > 0){
+        val+=40*p2Top;
+    } else if(p2Pawns > 0){
+        val-=40*p1Bottom;
     }
     
     // Makes AI take the closer win and push off loss
+    // Will also make AI try to block their opponent if it means winning fastest
     if(player == 2 && (noMoves || gameOver(board) == 1)){
-        val -= 500 + (depth * 50);
+        val -= (500 + (700 - (depth*10)));
     } else if (player == 1 && (noMoves || gameOver(board) == 2)){
-        val += 500 + (depth * 50);
+        val += (500 + (700 - (depth*10)));
     }
     
     // Random number added to make it randomly choose between multiple "equal" moves
@@ -504,7 +595,8 @@ int evalFunc(int board[8][8], int player, int depth, bool noMoves){
 bool timeLimitPassed = false;
 
 // Alpha Beta Search
-int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, time_t endTime, bool root = false){
+int alphaBeta(int board[8][8], int depthLeft, int alpha, int beta, bool maxPlayer, time_t endTime,
+              int currentDepth, bool root = false){
     
     // Checks if time limit has run out
     if(timeLimitPassed || time(nullptr) >= endTime){
@@ -526,8 +618,8 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
     
     
     // Runs evaluation function at max depth or end-game board
-    if(depth == 0 || moveAmt == 0 || gameOver(board) > 0){
-        return evalFunc(board, player, depth, (moveAmt == 0));
+    if(depthLeft <= 0 || moveAmt == 0 || gameOver(board) > 0){
+        return evalFunc(board, player, currentDepth, (moveAmt == 0), moveAmt);
     }
     
     if(maxPlayer){
@@ -536,7 +628,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
             
-            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, false, endTime);
+            tmpValue = alphaBeta(boardCopy, depthLeft-1, alpha, beta, false, endTime, currentDepth+1);
             if(tmpValue > value){
                 value = tmpValue;
                 
@@ -561,7 +653,7 @@ int alphaBeta(int board[8][8], int depth, int alpha, int beta, bool maxPlayer, t
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
             
-            tmpValue = alphaBeta(boardCopy, depth-1, alpha, beta, true, endTime);
+            tmpValue = alphaBeta(boardCopy, depthLeft-1, alpha, beta, true, endTime, currentDepth+1);
             if(tmpValue < value){
                 value = tmpValue;
                 
@@ -600,7 +692,7 @@ int iterativeDeepening(int seconds, bool player2 = true){
     
     // If there is less than half the time left, then it won't finish the next iteration, so stop
     while((time(nullptr) + (seconds/2)) <= endTime){
-        move = alphaBeta(currentBoard, depth, -90000, 90000, player2, endTime, true);
+        move = alphaBeta(currentBoard, depth, -90000, 90000, player2, endTime, 0, true);
         if(!timeLimitPassed){
             bestMove = move;
             depth++;
