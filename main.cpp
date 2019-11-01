@@ -60,17 +60,21 @@ void initUserBoard(){
     
     int square;
     
-    int i = 0; int j = 0;
+    int i = 1; int j = 0;
     while(fin >> square){
-        currentBoard[i][j] = square;
-        i++;
-        if(i == 8){
-            i = 0;
-            j++;
+        if ((i+j+1)%2 == 0){
+            currentBoard[i][j] = square;
         }
-        if(j == 8){
-            break;
-        }
+        do{
+            i++;
+            if(i == 8){
+                i = 0;
+                j++;
+            }
+            if(j == 8){
+                break;
+            }
+        } while ((i+j+1)%2 != 0);
     }
 }
 
