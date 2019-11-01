@@ -333,6 +333,7 @@ void printMoves(){
 }
 
 void printBoard(){
+    cout << " \nKEY:\n  P1 Pawn: Red Circle\n  P1 King: Red Diamond\n  P2 Pawn: Blue Circle\n  P2 King: Blue Diamond\n";
     cout << "              X - axis" << '\n';
     cout << "         |-0-|-1-|-2-|-3-|-4-|-5-|-6-|-7-|" << '\n';
     cout << "  Y";
@@ -342,7 +343,17 @@ void printBoard(){
             cout << "|-" << j << "-|   ";
         }
         if(((i+j+1)%2 == 0)){
-            cout << " | " << currentBoard[i][j];
+            if(currentBoard[i][j] == 1){ // Player 1 pawn = red circle
+                cout << " | " << "\033[1;31m" << "\u25EF" << "\033[0m";
+            } else if(currentBoard[i][j] == 3){ // Player 1 king = red diamond
+                cout << " | " << "\033[1;31m" << "\u25C6" << "\033[0m";
+            } else if(currentBoard[i][j] == 2){ // Player 2 pawn = blue circle
+                cout << " | " << "\033[1;34m" << "\u25EF" << "\033[0m";
+            } else if(currentBoard[i][j] == 4){ // Player 2 king = blue diamond
+                cout << " | " << "\033[1;34m" << "\u25C6" << "\033[0m";
+            } else {
+                cout << " | " << currentBoard[i][j];
+            }
         } else {
             cout << " |  ";
         }
@@ -616,7 +627,6 @@ int alphaBeta(int board[8][8], int depthLeft, int alpha, int beta, bool maxPlaye
     getLegalMoves(player, board, nodeMoves, nodeJumps);
     int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
     
-    
     // Runs evaluation function at max depth or end-game board, but will continue down a branch if there is a forced jump
     if((depthLeft <= 0 && (nodeJumps.size() == 0)) || moveAmt == 0 || gameOver(board) > 0){
         return evalFunc(board, player, currentDepth, (moveAmt == 0), moveAmt);
@@ -740,7 +750,6 @@ void playAIvsAI(int startingPlayer, int seconds){
         printBoard();
     }
 }
-
 
 // Gets user's move choice
 int getMoveChoice(){
