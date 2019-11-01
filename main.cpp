@@ -617,13 +617,13 @@ int alphaBeta(int board[8][8], int depthLeft, int alpha, int beta, bool maxPlaye
     int moveAmt = nodeJumps.size() > 0 ? nodeJumps.size() : nodeMoves.size();
     
     
-    // Runs evaluation function at max depth or end-game board
-    if(depthLeft <= 0 || moveAmt == 0 || gameOver(board) > 0){
+    // Runs evaluation function at max depth or end-game board, but will continue down a branch if there is a forced jump
+    if((depthLeft <= 0 && (nodeJumps.size() == 0)) || moveAmt == 0 || gameOver(board) > 0){
         return evalFunc(board, player, currentDepth, (moveAmt == 0), moveAmt);
     }
     
     if(maxPlayer){
-        value = -90000; /*Make -Infinity*/
+        value = -90000;
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
@@ -648,7 +648,7 @@ int alphaBeta(int board[8][8], int depthLeft, int alpha, int beta, bool maxPlaye
            return value;
         }
     } else {
-        value = 90000; /*Make Infinity*/
+        value = 90000;
         for(int i = 1; i <= moveAmt; i++){
             copyBoard(board, boardCopy);
             ImplementMove(i, boardCopy, nodeMoves, nodeJumps);
@@ -686,7 +686,7 @@ int iterativeDeepening(int seconds, bool player2 = true){
     
     // If there is only one move, do it
     if(movesList.size() == 1 || jumpsList.size() == 1){
-        cout << "Depth: 0\nTime Searching: " << time(nullptr) - startTime << '\n';
+        cout << "Depth: 0\nTime Searching: " << time(nullptr) - startTime << " Seconds\n";
         return 1;
     }
     
