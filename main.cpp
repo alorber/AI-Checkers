@@ -56,6 +56,7 @@ void initUserBoard(){
     string file;
     cout << "Please enter the name of your board file.\nEach space should be either:\n  0 - empty space\n";
     cout << "  1 - player 1 piece\n  2 - player 2 piece\n  3 - player 1 king\n  4 - player 2 king\n";
+    cout << "Note: Player 1 starts on the bottom of the board and player 2 starts on the top of the board.\n";
     cin >> file;
     ifstream fin;
     fin.open(file);
@@ -72,6 +73,13 @@ void initUserBoard(){
     int i = 1; int j = 0;
     while(fin >> square){
         if ((i+j+1)%2 == 0){
+            // If you input a board with a player in the opposite player's home row, it will become a king
+            if(j == 0 && square == 1){
+                square = 3;
+            } else if(j == 7 && square == 2){
+                square = 4;
+            }
+            
             currentBoard[i][j] = square;
             // Keeps track of # pcs
             if(square == 1 || square == 3){
