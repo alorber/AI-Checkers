@@ -26,6 +26,8 @@ int currentP1Pcs = 0;
 int currentP2Pcs = 0;
 int currentP1Kings = 0;
 int currentP2Kings = 0;
+// Keeps track of turns without jumps. After 80 (40 each player), a draw is called.
+int turnCount = 0;
 
 // Initializes new game board
 void initStartBoard(){
@@ -724,6 +726,22 @@ int iterativeDeepening(int seconds, bool player2 = true){
     return bestMove;
 }
 
+// Keeps track of turns without jumps. After 80 turns (40 each player) calls a draw.
+bool callDraw(){
+    if(jumpsList.size() == 0){
+        turnCount++;
+    } else {
+        turnCount = 0;
+    }
+    if(turnCount >= 80){
+        cout << "It has been 80 turns since a piece has been jumped. The game is a draw.\n";
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// Plays AI vs AI
 void playAIvsAI(int startingPlayer, int seconds){
     if(startingPlayer == 1){
         getLegalMoves(1);
@@ -740,6 +758,7 @@ void playAIvsAI(int startingPlayer, int seconds){
     while(true){
         // Player 2 turn
         getLegalMoves(2);
+        
         // If no moves then game ends
         if(movesList.size() == 0){
             cout << "Player 2 has no possible moves. Player 1 wins.\n";
@@ -749,6 +768,11 @@ void playAIvsAI(int startingPlayer, int seconds){
         cout << "Player 2 is thinking...\n";
         ImplementMove(iterativeDeepening(floor(seconds)));
         printBoard();
+        
+        // Checks for draw
+        if(callDraw()){
+            return;
+        }
         
         // Player 1 turn
         getLegalMoves(1);
@@ -760,6 +784,11 @@ void playAIvsAI(int startingPlayer, int seconds){
         cout << "Player 1 is thinking...\n";
         ImplementMove(iterativeDeepening(floor(seconds), false));
         printBoard();
+        
+        // Checks for draw
+        if(callDraw()){
+            return;
+        }
     }
 }
 
@@ -861,6 +890,11 @@ void playGame(){
         ImplementMove(iterativeDeepening(floor(input)));
         printBoard();
         
+        // Checks for draw
+        if(callDraw()){
+            return;
+        }
+        
         // Player 1 turn
         getLegalMoves(1);
         // If no moves then game ends
@@ -871,6 +905,11 @@ void playGame(){
         printMoves();
         ImplementMove(getMoveChoice());
         printBoard();
+        
+        // Checks for draw
+        if(callDraw()){
+            return;
+        }
     }
     
 }
