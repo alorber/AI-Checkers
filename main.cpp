@@ -56,6 +56,7 @@ void initUserBoard(){
     string file;
     cout << "Please enter the name of your board file.\nEach space should be either:\n  0 - empty space\n";
     cout << "  1 - player 1 piece\n  2 - player 2 piece\n  3 - player 1 king\n  4 - player 2 king\n";
+    cout << "The squares of the board that are not used in checkers should be replaced with spaces.\n";
     cout << "Note: Player 1 starts on the bottom of the board and player 2 starts on the top of the board.\n";
     cin >> file;
     ifstream fin;
@@ -341,7 +342,10 @@ void printMoves(){
 }
 
 void printBoard(){
-    cout << " \nKEY:\n  P1 Pawn: Red Circle\n  P1 King: Red Diamond\n  P2 Pawn: Blue Circle\n  P2 King: Blue Diamond\n";
+    cout << " \nKEY:\n  P1 Pawn: " << "\033[1;31m" << "\u25EF" << "\033[0m\n";
+    cout << "  P1 King: " << "\033[1;31m" << "\u25C6" << "\033[0m\n";
+    cout << "  P2 Pawn: " << "\033[1;34m" << "\u25EF" << "\033[0m\n";
+    cout << "  P2 King: " << "\033[1;34m" << "\u25C6" << "\033[0m\n";
     cout << "              X - axis" << '\n';
     cout << "         |-0-|-1-|-2-|-3-|-4-|-5-|-6-|-7-|" << '\n';
     cout << "  Y";
