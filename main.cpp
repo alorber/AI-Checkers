@@ -34,7 +34,7 @@ void initStartBoard(){
     int player = 2;
     for(int i = 0, j = 0; j < 8; i++){
         if ((i+j+1)%2 == 0){
-            currentBoard[i][j] = player;
+            currentBoard[j][i] = player;
         }
         
         if (i == 7){
@@ -83,7 +83,7 @@ void initUserBoard(){
                 square = 4;
             }
             
-            currentBoard[i][j] = square;
+            currentBoard[j][i] = square;
             // Keeps track of # pcs
             if(square == 1 || square == 3){
                 currentP1Pcs++;
@@ -150,8 +150,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // NW Corner
     if(i > 1 && j > 1 && (player == 1 || king)){
-        if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer+2)
-           && (board[i-2][j-2] == 0 || (i-2 == move.at(0).x && j-2 == move.at(0).y))
+        if((board[j-1][i-1] == otherPlayer || board[j-1][i-1] == otherPlayer+2)
+           && (board[j-2][i-2] == 0 || (i-2 == move.at(0).x && j-2 == move.at(0).y))
            && legalJump(i-1, j-1, moveCopy)){
             move.push_back(Coordinate(i-2, j-2));
             multiOptions = true;
@@ -161,8 +161,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // NE Corner
     if(i < 6 && j > 1 && (player == 1 || king)){
-        if((board[i+1][j-1] == otherPlayer || board[i+1][j-1] == otherPlayer+2)
-           && (board[i+2][j-2] == 0 || (i+2 == move.at(0).x && j-2 == move.at(0).y))
+        if((board[j-1][i+1] == otherPlayer || board[j-1][i+1] == otherPlayer+2)
+           && (board[j-2][i+2] == 0 || (i+2 == move.at(0).x && j-2 == move.at(0).y))
            && legalJump(i+1, j-1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
@@ -179,8 +179,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // SW Corner
     if(i > 1 && j < 6 && (player == 2 || king)){
-        if((board[i-1][j+1] == otherPlayer || board[i-1][j+1] == otherPlayer+2)
-           && (board[i-2][j+2] == 0 || (i-2 == move.at(0).x && j+2 == move.at(0).y))
+        if((board[j+1][i-1] == otherPlayer || board[j+1][i-1] == otherPlayer+2)
+           && (board[j+2][i-2] == 0 || (i-2 == move.at(0).x && j+2 == move.at(0).y))
            && legalJump(i-1, j+1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
@@ -197,8 +197,8 @@ void jump(vector<Coordinate>& move, int i, int j, int player, int otherPlayer, b
     
     // SE Corner
     if(i < 6 && j < 6 && (player == 2 || king)){
-        if((board[i+1][j+1] == otherPlayer || board[i+1][j+1] == otherPlayer+2)
-           && (board[i+2][j+2] == 0 || (i+2 == move.at(0).x && j+2 == move.at(0).y))
+        if((board[j+1][i+1] == otherPlayer || board[j+1][i+1] == otherPlayer+2)
+           && (board[j+2][i+2] == 0 || (i+2 == move.at(0).x && j+2 == move.at(0).y))
            && legalJump(i+1, j+1, moveCopy)){
             if (multiOptions) {
                 moves.push_back(moveCopy);
@@ -233,21 +233,21 @@ void getLegalMoves(int player, int board[8][8] = currentBoard, vector<vector<Coo
     }
     
     for(int i = 0, j = 0; j < 8; i++){
-        if(board[i][j] == player || board[i][j] == player +2){
+        if(board[j][i] == player || board[j][i] == player +2){
             
-            king = board[i][j] > 2;
+            king = board[j][i] > 2;
             
             // Checks North corners
             if((player == 1 || king) && j != 0){ // If on top row, then no North corners
     
                 // check NW
                 if(i != 0){
-                    if(!jumped && board[i-1][j-1] == 0){
+                    if(!jumped && board[j-1][i-1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i-1, j-1)});
-                    } else if((board[i-1][j-1] == otherPlayer || board[i-1][j-1] == otherPlayer + 2)
+                    } else if((board[j-1][i-1] == otherPlayer || board[j-1][i-1] == otherPlayer + 2)
                               && i != 1 && j != 1){
-                        if(board[i-2][j-2] == 0){
+                        if(board[j-2][i-2] == 0){
                             // Handle jump
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i-2, j-2)});
@@ -259,12 +259,12 @@ void getLegalMoves(int player, int board[8][8] = currentBoard, vector<vector<Coo
                 
                 // check NE
                 if(i != 7){
-                    if(!jumped && board[i+1][j-1] == 0){
+                    if(!jumped && board[j-1][i+1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i+1, j-1)});
-                    } else if((board[i+1][j-1] == otherPlayer ||board[i+1][j-1] == otherPlayer + 2)
+                    } else if((board[j-1][i+1] == otherPlayer ||board[j-1][i+1] == otherPlayer + 2)
                               && i != 6 && j != 1){
-                        if(board[i+2][j-2] == 0){
+                        if(board[j-2][i+2] == 0){
                             // Handle jump
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i+2, j-2)});
@@ -279,12 +279,12 @@ void getLegalMoves(int player, int board[8][8] = currentBoard, vector<vector<Coo
             if((player == 2 || king) && j != 7){
                 // check SW
                 if(i != 0){
-                    if(!jumped && board[i-1][j+1] == 0){
+                    if(!jumped && board[j+1][i-1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i-1, j+1)});
-                    } else if((board[i-1][j+1] == otherPlayer ||board[i-1][j+1] == otherPlayer + 2)
+                    } else if((board[j+1][i-1] == otherPlayer ||board[j+1][i-1] == otherPlayer + 2)
                               && i != 1 && j != 6){
-                        if(board[i-2][j+2] == 0){
+                        if(board[j+2][i-2] == 0){
                             // Handle jump
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i-2, j+2)});
@@ -296,12 +296,12 @@ void getLegalMoves(int player, int board[8][8] = currentBoard, vector<vector<Coo
                 
                 // check SE
                 if(i != 7){
-                    if(!jumped && board[i+1][j+1] == 0){
+                    if(!jumped && board[j+1][i+1] == 0){
                         // Adds move
                         moves.push_back({Coordinate(i, j), Coordinate(i+1, j+1)});
-                    } else if((board[i+1][j+1] == otherPlayer ||board[i+1][j+1] == otherPlayer + 2)
+                    } else if((board[j+1][i+1] == otherPlayer ||board[j+1][i+1] == otherPlayer + 2)
                               && i != 6 && j != 6){
-                        if(board[i+2][j+2] == 0){
+                        if(board[j+2][i+2] == 0){
                             // Handle jump
                             jumped = true;
                             moves.push_back({Coordinate(i, j), Coordinate(i+2, j+2)});
@@ -320,7 +320,7 @@ void getLegalMoves(int player, int board[8][8] = currentBoard, vector<vector<Coo
     }
 }
 
-// Displays all legal moves (If jump are possible, will only display jumps)
+// Displays all legal moves (If jumps are possible, will only display jumps)
 void printMoves(){
     if(jumpsList.size() > 0){
         for(int i = 0; i < jumpsList.size(); i++){
@@ -357,16 +357,16 @@ void printBoard(){
             cout << "|-" << j << "-|   ";
         }
         if(((i+j+1)%2 == 0)){
-            if(currentBoard[i][j] == 1){ // Player 1 pawn = red circle
+            if(currentBoard[j][i] == 1){ // Player 1 pawn = red circle
                 cout << " | " << "\033[1;31m" << "\u25EF" << "\033[0m";
-            } else if(currentBoard[i][j] == 3){ // Player 1 king = red diamond
+            } else if(currentBoard[j][i] == 3){ // Player 1 king = red diamond
                 cout << " | " << "\033[1;31m" << "\u25C6" << "\033[0m";
-            } else if(currentBoard[i][j] == 2){ // Player 2 pawn = blue circle
+            } else if(currentBoard[j][i] == 2){ // Player 2 pawn = blue circle
                 cout << " | " << "\033[1;34m" << "\u25EF" << "\033[0m";
-            } else if(currentBoard[i][j] == 4){ // Player 2 king = blue diamond
+            } else if(currentBoard[j][i] == 4){ // Player 2 king = blue diamond
                 cout << " | " << "\033[1;34m" << "\u25C6" << "\033[0m";
             } else {
-                cout << " | " << currentBoard[i][j];
+                cout << " | " << currentBoard[j][i];
             }
         } else {
             cout << " |  ";
@@ -387,10 +387,10 @@ void ImplementMove(int moveNum, int board[8][8] = currentBoard, vector<vector<Co
     bool jump = jumps.size() > 0;
     int piece;
     if(!jump){
-        piece = board[moves.at(moveNum).at(0).x][moves.at(moveNum).at(0).y];
+        piece = board[moves.at(moveNum).at(0).y][moves.at(moveNum).at(0).x];
         // Makes piece king when needed
         if ((moves.at(moveNum).at(1).y == 0 && piece == 1) || (moves.at(moveNum).at(1).y == 7 && piece == 2)) {
-            board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = piece + 2;
+            board[moves.at(moveNum).at(1).y][moves.at(moveNum).at(1).x] = piece + 2;
             // Keeps track of # pcs
             if(piece == 1){
                 currentP1Kings++;
@@ -398,29 +398,29 @@ void ImplementMove(int moveNum, int board[8][8] = currentBoard, vector<vector<Co
                 currentP2Kings++;
             }
         } else {
-            board[moves.at(moveNum).at(1).x][moves.at(moveNum).at(1).y] = piece;
+            board[moves.at(moveNum).at(1).y][moves.at(moveNum).at(1).x] = piece;
         }
-        board[moves.at(moveNum).at(0).x][moves.at(moveNum).at(0).y] = 0;
+        board[moves.at(moveNum).at(0).y][moves.at(moveNum).at(0).x] = 0;
     } else {
-        piece = board[jumps.at(moveNum)->at(0).x][jumps.at(moveNum)->at(0).y];
+        piece = board[jumps.at(moveNum)->at(0).y][jumps.at(moveNum)->at(0).x];
         int jumpedX;
         int jumpedY;
         // Clears starting square
-        board[jumps.at(moveNum)->at(0).x][jumps.at(moveNum)->at(0).y] = 0;
+        board[jumps.at(moveNum)->at(0).y][jumps.at(moveNum)->at(0).x] = 0;
         for (int i = 0; i < jumps.at(moveNum)->size(); i++) {
             if(i == jumps.at(moveNum)->size() - 1){
                 // Makes piece king when needed
                 if ((jumps.at(moveNum)->at(i).y == 0 && piece == 1) || (jumps.at(moveNum)->at(i).y == 7 && piece == 2)){
-                    board[jumps.at(moveNum)->at(i).x][jumps.at(moveNum)->at(i).y] = piece + 2;
+                    board[jumps.at(moveNum)->at(i).y][jumps.at(moveNum)->at(i).x] = piece + 2;
                 } else {
-                    board[jumps.at(moveNum)->at(i).x][jumps.at(moveNum)->at(i).y] = piece;
+                    board[jumps.at(moveNum)->at(i).y][jumps.at(moveNum)->at(i).x] = piece;
                 }
             } else {
                 // Gets coordinate of jumped square and clears it
                 jumpedX = (abs(jumps.at(moveNum)->at(i).x + jumps.at(moveNum)->at(i+1).x)) / 2;
                 jumpedY = (abs(jumps.at(moveNum)->at(i).y + jumps.at(moveNum)->at(i+1).y)) / 2;
                 // Keeps track of # pcs
-                int jumpedPc = board[jumpedX][jumpedY];
+                int jumpedPc = board[jumpedY][jumpedX];
                 if(board == currentBoard){
                     currentTotalPcs--;
                     if(jumpedPc == 1 || jumpedPc == 3){
@@ -435,7 +435,7 @@ void ImplementMove(int moveNum, int board[8][8] = currentBoard, vector<vector<Co
                         }
                     }
                 }
-                board[jumpedX][jumpedY] = 0;
+                board[jumpedY][jumpedX] = 0;
             }
         }
     }
@@ -468,9 +468,9 @@ int gameOver(int board[8][8] = currentBoard){
     bool player2Wins = true;
     
     for(int i = 0, j = 0; j < 8; i++){
-        if(player2Wins && (board[i][j] == 1 || board[i][j] == 3)){
+        if(player2Wins && (board[j][i] == 1 || board[j][i] == 3)){
             player2Wins = false;
-        } else if(player1Wins && (board[i][j] == 2 || board[i][j] == 4)){
+        } else if(player1Wins && (board[j][i] == 2 || board[j][i] == 4)){
             player1Wins = false;
         }
         
@@ -494,7 +494,7 @@ int gameOver(int board[8][8] = currentBoard){
 void copyBoard(int from[8][8], int to[8][8]){
     for(int i = 0, j = 0; j < 8; i++){
         
-        to[i][j] = from[i][j];
+        to[j][i] = from[j][i];
         
         if(i == 7){
             i = -1;
@@ -522,29 +522,29 @@ int evalFunc(int board[8][8], int player, int depth, bool noMoves, int numMoves)
     
     for(int i = 0, j = 0; j < 8; i++){
         // Home Rows (+- 50)
-        if(j == 0 && (board[i][j] == 2 || board[i][j] == 4)){
+        if(j == 0 && (board[j][i] == 2 || board[j][i] == 4)){
             p2Top++;
-        } else if(j == 7 && (board[i][j] == 1 || board[i][j] == 3)){
+        } else if(j == 7 && (board[j][i] == 1 || board[j][i] == 3)){
             p1Bottom++;
         }
         
         // Pawns (+- 100)
-        if(board[i][j] == 1){
+        if(board[j][i] == 1){
             val-=100;
             p1Pawns++;
             p1Pcs++;
             totalpcs++;
-        } else if(board[i][j] == 2){
+        } else if(board[j][i] == 2){
             val+=100;
             p2Pawns++;
             p2Pcs++;
             totalpcs++;
-        } else if(board[i][j] == 3){ // Kings (+- 155)
+        } else if(board[j][i] == 3){ // Kings (+- 155)
             val-=155;
             p1Kings++;
             p1Pcs++;
             totalpcs++;
-        } else if(board[i][j] == 4){
+        } else if(board[j][i] == 4){
             val += 155;
             p2Kings++;
             p2Pcs++;
@@ -553,18 +553,18 @@ int evalFunc(int board[8][8], int player, int depth, bool noMoves, int numMoves)
         
         // Middle box (+- 50)
         if((i >= 2 && i <= 5) && (j >= 2 && j <= 5)){
-            if (board[i][j] == 2 || board[i][j] == 4) {
+            if (board[j][i] == 2 || board[j][i] == 4) {
                 p2MidBox++;
-            } else if(board[i][j] == 2 || board[i][j] == 4){
+            } else if(board[j][i] == 2 || board[j][i] == 4){
                 p1MidBox++;
             }
         }
         
         // Mid-board, but not in middle box (+- 10)
         if((i < 2 || i > 5) && (j >= 2 && j <= 5)){
-            if (board[i][j] == 2 || board[i][j] == 4) {
+            if (board[j][i] == 2 || board[j][i] == 4) {
                 p2MidRows++;
-            } else if(board[i][j] == 2 || board[i][j] == 4){
+            } else if(board[j][i] == 2 || board[j][i] == 4){
                 p1MidRows++;
             }
         }
